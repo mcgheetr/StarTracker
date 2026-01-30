@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\StarTracker.Core\StarTracker.Core.csproj" />
+    <ProjectReference Include="..\StarTracker.Infrastructure\StarTracker.Infrastructure.csproj" />
   </ItemGroup>
 
   <PropertyGroup>
