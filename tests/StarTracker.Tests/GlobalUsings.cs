@@ -1,0 +1,9 @@
+global using System;
+global using System.Linq;
+global using System.Threading.Tasks;
+global using Xunit;
+global using Microsoft.AspNetCore.DataProtection;
+global using StarTracker.Infrastructure;
+global using StarTracker.Core.DTOs;
+global using StarTracker.Core.Services;
+global using StarTracker.Core;
