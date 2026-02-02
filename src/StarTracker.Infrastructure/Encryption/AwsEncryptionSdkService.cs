@@ -2,7 +2,7 @@ using System;
 using System.Text;
 using StarTracker.Core.Interfaces;
 
-namespace StarTracker.Infrastructure;
+namespace StarTracker.Infrastructure.Encryption;
 
 // Mock/placeholder for the AWS Encryption SDK-backed encryptor. This class simulates
 // SDK behavior for local testing. When ready, replace internals with real AWS.Cryptography.EncryptionSDK calls.

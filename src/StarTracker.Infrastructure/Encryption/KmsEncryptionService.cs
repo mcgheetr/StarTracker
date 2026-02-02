@@ -5,7 +5,7 @@ using System.Text.Json;
 using Amazon.KeyManagementService;
 using Amazon.KeyManagementService.Model;
 
-namespace StarTracker.Infrastructure;
+namespace StarTracker.Infrastructure.Encryption;
 
 public class KmsEncryptionService : IEncryptionService
 {

@@ -1,3 +1,6 @@
+using StarTracker.Infrastructure.Repositories;
+using StarTracker.Infrastructure.Encryption;
+
 namespace StarTracker.Tests;
 
 public class InMemoryObservationRepositoryTests
@@ -6,7 +9,7 @@ public class InMemoryObservationRepositoryTests
     public async Task CreateAndGetObservation_Works()
     {
         var provider = Microsoft.AspNetCore.DataProtection.DataProtectionProvider.Create("StarTracker.Tests");
-        var enc = new StarTracker.Infrastructure.DataProtectionEncryptionService(provider);
+        var enc = new DataProtectionEncryptionService(provider);
         var repo = new InMemoryObservationRepository(enc);
 
         var dto = new ObservationDto(Guid.Empty, "Vega", DateTimeOffset.UtcNow, 80.0, 38.78, "test-observer", "note");
@@ -41,7 +44,7 @@ public class InMemoryObservationRepositoryTests
     public async Task StoredPayloads_AreEncrypted_WhenEncryptionServiceProvided()
     {
         var provider = Microsoft.AspNetCore.DataProtection.DataProtectionProvider.Create("StarTracker.Tests");
-        var enc = new StarTracker.Infrastructure.DataProtectionEncryptionService(provider);
+        var enc = new DataProtectionEncryptionService(provider);
         var repo = new InMemoryObservationRepository(enc);
 
         var now = DateTimeOffset.UtcNow;

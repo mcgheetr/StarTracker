@@ -2,7 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 
-namespace StarTracker.Infrastructure;
+namespace StarTracker.Infrastructure.Encryption;
 
 // Deterministic, test-only fake that simulates envelope encryption using AES-GCM under the hood.
 public class FakeAwsEnvelopeEncryptor : IAwsEnvelopeEncryptor
@@ -10,7 +10,7 @@ public class FakeAwsEnvelopeEncryptor : IAwsEnvelopeEncryptor
     public string Protect(string plaintext)
     {
         var key = RandomNumberGenerator.GetBytes(32);
-using var aes = new System.Security.Cryptography.AesGcm(key, 16);
+        using var aes = new System.Security.Cryptography.AesGcm(key, 16);
         var pt = Encoding.UTF8.GetBytes(plaintext);
         var nonce = RandomNumberGenerator.GetBytes(12);
         var ct = new byte[pt.Length];

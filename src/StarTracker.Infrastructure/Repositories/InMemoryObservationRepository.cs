@@ -1,6 +1,6 @@
 using StarTracker.Core.DTOs;
 
-namespace StarTracker.Infrastructure;
+namespace StarTracker.Infrastructure.Repositories;
 
 public class InMemoryObservationRepository(IEncryptionService? encryption = null) : IObservationRepository
 {

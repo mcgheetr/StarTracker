@@ -1,3 +1,5 @@
+using StarTracker.Infrastructure.Encryption;
+
 namespace StarTracker.Tests;
 
 public class KmsEncryptionServiceTests
@@ -5,7 +7,7 @@ public class KmsEncryptionServiceTests
     [Fact]
     public void KmsEnvelope_RoundTrip_With_FakeEnvelope()
     {
-        var fake = new StarTracker.Infrastructure.FakeAwsEnvelopeEncryptor();
+        var fake = new FakeAwsEnvelopeEncryptor();
         var svc = new KmsEncryptionService(fake);
 
         var clear = "hello secret coords";
