@@ -42,6 +42,88 @@ Notes on encryption provider (dev vs prod):
 
 
 
+## Development
+
+### Build and test locally
+
+Build the solution:
+```bash
+dotnet build -c Release
+```
+
+Run tests with visible output (shows all passed/failed tests):
+```bash
+dotnet test -c Release --logger "console;verbosity=normal"
+```
+
+Note: The `--logger "console;verbosity=normal"` flag is required to see test output and results in the terminal. Without it, test results are not displayed.
+
+Run a specific test project:
+```bash
+dotnet test tests/StarTracker.Tests -c Release --logger "console;verbosity=normal"
+```
+
+### Run the API locally
+
+Prerequisites:
+- .NET 8 SDK
+- Optional: set `ApiKey` in `appsettings.Development.json` or via `ApiKey` environment variable
+
+**With InMemory Repository (default):**
+```bash
+dotnet run --project src/StarTracker.Api
+```
+
+**With DynamoDB Local:**
+
+First, start DynamoDB Local using Docker:
+```bash
+docker-compose up -d dynamodb-local
+```
+
+Initialize the DynamoDB table:
+```bash
+.\scripts\init-dynamodb-local.ps1
+```
+
+Then run the API with DynamoDB Local configuration:
+```bash
+dotnet run --project src/StarTracker.Api --launch-profile DynamoDBLocal
+```
+
+The API will start on `http://localhost:5115`. Use the examples in the [Examples](#examples) section above.
+
+To stop DynamoDB Local:
+```bash
+docker-compose down
+```
+
+### Repository Configuration
+
+The repository can be switched via `appsettings.json`:
+
+```json
+{
+  "Repository": {
+    "Type": "InMemory"
+  }
+}
+```
+
+Or for DynamoDB (see `appsettings.DynamoDBLocal.json` for example):
+```json
+{
+  "Repository": {
+    "Type": "DynamoDB",
+    "DynamoDB": {
+      "ServiceUrl": "http://localhost:8000",
+      "Region": "us-east-1",
+      "TableName": "observations"
+    }
+  }
+}
+```
+
 ## Terraform scaffold
 
 See `infra/terraform` for a scaffold that creates a KMS key and a DynamoDB table with server-side encryption (SSE) using the KMS key.
