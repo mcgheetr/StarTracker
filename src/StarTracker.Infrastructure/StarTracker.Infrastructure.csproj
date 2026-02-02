@@ -7,6 +7,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="8.0.0" />
     <PackageReference Include="AWSSDK.KeyManagementService" Version="3.7.3.20" />
+    <PackageReference Include="AWSSDK.DynamoDBv2" Version="3.7.101.8" />
     <PackageReference Include="AWS.Cryptography.EncryptionSDK" Version="4.0.0" />
   </ItemGroup>
 

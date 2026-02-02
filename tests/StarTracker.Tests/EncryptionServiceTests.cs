@@ -1,3 +1,5 @@
+using StarTracker.Infrastructure.Encryption;
+
 namespace StarTracker.Tests;
 
 public class EncryptionServiceTests

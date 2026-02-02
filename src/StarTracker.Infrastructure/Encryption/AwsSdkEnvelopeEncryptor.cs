@@ -1,7 +1,7 @@
 using System;
 using StarTracker.Core.Interfaces;
 
-namespace StarTracker.Infrastructure;
+namespace StarTracker.Infrastructure.Encryption;
 
 /// <summary>
 /// Placeholder for the real AWS Encryption SDK envelope encryptor implementation.

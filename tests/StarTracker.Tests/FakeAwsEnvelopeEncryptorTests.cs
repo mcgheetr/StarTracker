@@ -1,3 +1,5 @@
+using StarTracker.Infrastructure.Encryption;
+
 namespace StarTracker.Tests;
 
 public class FakeAwsEnvelopeEncryptorTests
@@ -5,7 +7,7 @@ public class FakeAwsEnvelopeEncryptorTests
     [Fact]
     public void RoundTrip_Works()
     {
-        var svc = new StarTracker.Infrastructure.FakeAwsEnvelopeEncryptor();
+        var svc = new FakeAwsEnvelopeEncryptor();
         var clear = "{" + "\"RightAscensionDegrees\":282.58168,\"DeclinationDegrees\":37.70443}";
         var ct = svc.Protect(clear);
         Assert.NotNull(ct);

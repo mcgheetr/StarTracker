@@ -1,4 +1,4 @@
-namespace StarTracker.Infrastructure;
+namespace StarTracker.Infrastructure.Encryption;
 
 public interface IAwsEnvelopeEncryptor
 {

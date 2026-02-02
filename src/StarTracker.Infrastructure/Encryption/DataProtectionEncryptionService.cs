@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.DataProtection;
 
-namespace StarTracker.Infrastructure;
+namespace StarTracker.Infrastructure.Encryption;
 
 public class DataProtectionEncryptionService(IDataProtectionProvider provider) : IEncryptionService
 {
