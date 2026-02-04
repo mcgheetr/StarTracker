@@ -7,6 +7,14 @@ This repo uses GitHub Actions + Terraform for deployment. See:
 - `.github/workflows/deploy.yml`
 - `.github/workflows/destroy.yml`
 
+## Bootstrap Remote State (required once)
+
+```powershell
+cd infra/terraform/bootstrap
+terraform init
+terraform apply
+```
+
 ## Manual Deployment
 
 ### 1. Prerequisites

@@ -8,14 +8,13 @@ terraform {
     }
   }
 
-  # Remote state (uncomment after creating S3 bucket + DynamoDB table)
-  # backend "s3" {
-  #   bucket         = "startracker-terraform-state"
-  #   key            = "startracker/terraform.tfstate"
-  #   region         = "us-east-1"
-  #   encrypt        = true
-  #   dynamodb_table = "startracker-terraform-locks"
-  # }
+  backend "s3" {
+    bucket         = "startracker-terraform-state"
+    key            = "startracker/terraform.tfstate"
+    region         = "us-east-1"
+    encrypt        = true
+    dynamodb_table = "startracker-terraform-locks"
+  }
 }
 
 provider "aws" {

@@ -18,6 +18,12 @@ Health:
 
 - `curl -H "X-API-Key: <key>" http://localhost:5000/api/v1/health`
 
+Swagger (OpenAPI):
+
+- UI: `http://localhost:5115/swagger`
+- JSON: `http://localhost:5115/swagger/v1/swagger.json`
+- API key: click **Authorize** and enter the `X-API-Key` value
+
 Get position (compass guidance):
 
 - `curl -H "X-API-Key: <key>" "http://localhost:5000/api/v1/stars/Polaris/position?lat=37.70443&lon=-77.41832&at=2026-01-29T16:00:00Z"`
@@ -29,6 +35,24 @@ Get position (telescope users)
 Create observation:
 
 - `curl -X POST -H "Content-Type: application/json" -H "X-API-Key: <key>" -d '{"observedAt":"2026-01-29T16:00:00Z","rightAscensionDegrees":80,"declinationDegrees":38.78,"observer":"me","notes":"note"}' http://localhost:5000/api/v1/stars/Vega/observations`
+
+### Live Deployment (AWS)
+
+The API is deployed to AWS Lambda with API Gateway:
+
+**Base URL (Dev):** `https://2ujy1g942f.execute-api.us-east-1.amazonaws.com/`
+
+**Endpoints:**
+- `GET /api/v1/health` - Health check
+- `GET /api/v1/stars/{target}/position?lat={lat}&lon={lon}&at={utc}` - Get star position
+- `POST /api/v1/stars/{target}/observations` - Create observation
+- `GET /api/v1/stars/{target}/observations` - Get observations for a target
+- `GET /api/v1/observations/{id}` - Get observation by ID
+
+Example:
+```bash
+curl -H "X-API-Key: <key>" https://2ujy1g942f.execute-api.us-east-1.amazonaws.com/api/v1/health
+```
 
 Notes on encryption provider (dev vs prod):
 
@@ -126,7 +150,13 @@ Or for DynamoDB (see `appsettings.DynamoDBLocal.json` for example):
 
 ## Terraform scaffold
 
-See `infra/terraform` for a scaffold that creates a KMS key and a DynamoDB table with server-side encryption (SSE) using the KMS key.
+See `infra/terraform` for the deployment scaffold. Before running CI/CD, bootstrap remote state:
+
+```bash
+cd infra/terraform/bootstrap
+terraform init
+terraform apply
+```
 
 ## Conventions
 
