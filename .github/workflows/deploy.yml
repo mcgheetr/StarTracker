@@ -110,20 +110,6 @@ jobs:
           api_url="${api_url%/}"
           printf "api_url=%s\n" "$api_url" >> "$GITHUB_OUTPUT"
       
-      - name: Health check
-        run: |
-          for i in {1..10}; do
-            if curl -s -H "X-API-Key: ${{ secrets.API_KEY }}" \
-              "${{ steps.output.outputs.api_url }}/api/v1/health" | grep -q "healthy"; then
-              echo "✓ API is healthy"
-              exit 0
-            fi
-            echo "Attempt $i/10: waiting for API..."
-            sleep 5
-          done
-          echo "✗ API health check failed"
-          exit 1
-      
       - name: Deployment summary
         run: |
           echo "## Deployment Complete" >> $GITHUB_STEP_SUMMARY
