@@ -100,11 +100,14 @@ jobs:
         working-directory: ./infra/terraform
         id: output
         run: |
-          api_url="$(terraform output -raw api_gateway_url 2>/dev/null | sed 's/::.*//' | tr -d '\r\n')"
+          api_url="$(terraform output -raw api_gateway_url 2>/dev/null \
+            | sed -e 's/\r//g' -e '/^\[command\]/d' -e '/^::/d' \
+            | grep -Eo 'https?://[^ ]+' | tail -n1)"
           if [ -z "$api_url" ]; then
             echo "Failed to read api_gateway_url from terraform output" >&2
             exit 1
           fi
+          api_url="${api_url%/}"
           printf "api_url=%s\n" "$api_url" >> "$GITHUB_OUTPUT"
       
       - name: Health check
