@@ -1,0 +1,125 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+      region:
+        description: 'AWS region'
+        required: true
+        default: 'us-east-1'
+        type: string
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      
+      - name: Restore dependencies
+        run: dotnet restore
+      
+      - name: Build
+        run: dotnet build -c Release --no-restore
+      
+      - name: Test
+        run: dotnet test -c Release --no-build --logger "console;verbosity=normal"
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
+          aws-region: ${{ inputs.region }}
+      
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Build and push Docker image to ECR
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile.lambda
+          push: true
+          tags: |
+            ${{ steps.login-ecr.outputs.registry }}/startracker-${{ inputs.environment }}:${{ github.sha }}
+            ${{ steps.login-ecr.outputs.registry }}/startracker-${{ inputs.environment }}:latest
+          platforms: linux/amd64
+          provenance: false
+      
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.5.0
+      
+      - name: Terraform Init
+        working-directory: ./infra/terraform
+        run: terraform init
+      
+      - name: Terraform Plan
+        working-directory: ./infra/terraform
+        run: |
+          terraform plan \
+            -var="region=${{ inputs.region }}" \
+            -var="environment=${{ inputs.environment }}" \
+            -var="image_tag=latest" \
+            -var="api_key=${{ secrets.API_KEY }}" \
+            -out=tfplan
+      
+      - name: Terraform Apply
+        working-directory: ./infra/terraform
+        run: |
+          terraform apply -auto-approve tfplan
+      
+      - name: Get API Gateway URL
+        working-directory: ./infra/terraform
+        id: output
+        run: |
+          echo "api_url=$(terraform output -raw api_gateway_url)" >> $GITHUB_OUTPUT
+      
+      - name: Health check
+        run: |
+          for i in {1..10}; do
+            if curl -s -H "X-API-Key: ${{ secrets.API_KEY }}" \
+              "${{ steps.output.outputs.api_url }}/api/v1/health" | grep -q "healthy"; then
+              echo "✓ API is healthy"
+              exit 0
+            fi
+            echo "Attempt $i/10: waiting for API..."
+            sleep 5
+          done
+          echo "✗ API health check failed"
+          exit 1
+      
+      - name: Deployment summary
+        run: |
+          echo "## Deployment Complete" >> $GITHUB_STEP_SUMMARY
+          echo "- **Environment**: ${{ inputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Region**: ${{ inputs.region }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **API URL**: ${{ steps.output.outputs.api_url }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Image**: startracker-${{ inputs.environment }}:latest" >> $GITHUB_STEP_SUMMARY

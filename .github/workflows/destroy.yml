@@ -1,0 +1,58 @@
+name: Destroy Infrastructure
+
+on:
+  schedule:
+    # Destroy daily at 10 PM UTC
+    - cron: '0 22 * * *'
+  workflow_dispatch:
+
+jobs:
+  destroy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
+          aws-region: us-east-1
+      
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.5.0
+      
+      - name: Terraform Init
+        working-directory: ./infra/terraform
+        run: terraform init
+      
+      - name: Safety check - verify portfolio tag
+        working-directory: ./infra/terraform
+        run: |
+          if terraform output -json | grep -q '"purpose".*"portfolio"'; then
+            echo "✓ Portfolio tag verified - safe to destroy"
+          else
+            echo "✗ Portfolio tag not found in state - aborting destroy"
+            exit 1
+          fi
+      
+      - name: Terraform Destroy
+        working-directory: ./infra/terraform
+        run: |
+          terraform destroy \
+            -var="region=us-east-1" \
+            -var="environment=dev" \
+            -var="image_tag=latest" \
+            -var="api_key=${{ secrets.API_KEY }}" \
+            -auto-approve
+      
+      - name: Notification
+        if: always()
+        run: |
+          echo "## Infrastructure Destroyed" >> $GITHUB_STEP_SUMMARY
+          echo "Scheduled or manual destruction completed." >> $GITHUB_STEP_SUMMARY

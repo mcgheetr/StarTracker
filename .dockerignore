@@ -1,0 +1,28 @@
+# Build artifacts
+**/bin/
+**/obj/
+**/out/
+
+# Local data
+dynamodb-data/
+*.db
+
+# IDE
+.vs/
+.vscode/
+*.user
+*.suo
+
+# Git
+.git/
+.gitignore
+
+# Tests
+**/TestResults/
+
+# Misc
+README.md
+DESIGN.md
+*.md
+docker-compose.yml
+.editorconfig
