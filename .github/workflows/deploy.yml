@@ -100,7 +100,8 @@ jobs:
         working-directory: ./infra/terraform
         id: output
         run: |
-          echo "api_url=$(terraform output -raw api_gateway_url)" >> $GITHUB_OUTPUT
+          api_url="$(terraform output -raw api_gateway_url | tr -d '\n')"
+          printf "api_url=%s\n" "$api_url" >> "$GITHUB_OUTPUT"
       
       - name: Health check
         run: |
