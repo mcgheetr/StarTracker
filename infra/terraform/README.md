@@ -38,37 +38,16 @@ Terraform configuration for deploying StarTracker to **AWS Lambda** (free-tier f
 
 4. **API Key**: Choose a secure API key (stored in Terraform variables).
 
-5. **(Optional) Create S3 + DynamoDB for remote state**:
+5. **Create remote state (required for CI)**:
    ```bash
-   # S3 bucket for state
-   aws s3api create-bucket \
-     --bucket startracker-terraform-state \
-     --region us-east-1
-
-   aws s3api put-bucket-versioning \
-     --bucket startracker-terraform-state \
-     --versioning-configuration Status=Enabled
-
-   aws s3api put-bucket-encryption \
-     --bucket startracker-terraform-state \
-     --server-side-encryption-configuration '{
-       "Rules": [{
-         "ApplyServerSideEncryptionByDefault": {
-           "SSEAlgorithm": "AES256"
-         }
-       }]
-     }'
-
-   # DynamoDB table for state locking
-   aws dynamodb create-table \
-     --table-name startracker-terraform-locks \
-     --attribute-definitions AttributeName=LockID,AttributeType=S \
-     --key-schema AttributeName=LockID,KeyType=HASH \
-     --billing-mode PAY_PER_REQUEST \
-     --region us-east-1
+   cd infra/terraform/bootstrap
+   terraform init
+   terraform apply
    ```
 
-   Then uncomment the backend configuration in `main.tf`.
+   This creates:
+   - S3 bucket: `startracker-terraform-state`
+   - DynamoDB table: `startracker-terraform-locks`
 
 ## Deployment Steps
 
