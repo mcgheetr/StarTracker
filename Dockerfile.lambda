@@ -1,0 +1,39 @@
+# Build stage
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+
+# Copy solution and project files
+COPY StarTracker.sln .
+COPY src/StarTracker.Api/StarTracker.Api.csproj src/StarTracker.Api/
+COPY src/StarTracker.Core/StarTracker.Core.csproj src/StarTracker.Core/
+COPY src/StarTracker.Infrastructure/StarTracker.Infrastructure.csproj src/StarTracker.Infrastructure/
+
+# Restore dependencies
+RUN dotnet restore
+
+# Copy source code
+COPY src/ src/
+
+# Build and publish
+WORKDIR /src/src/StarTracker.Api
+RUN dotnet publish -c Release -o /app/publish --no-restore
+
+# Runtime stage (Lambda Web Adapter)
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+WORKDIR /app
+
+# Add Lambda Web Adapter extension
+COPY --from=public.ecr.aws/awsguru/aws-lambda-adapter:0.8.4 /lambda-adapter /opt/extensions/lambda-adapter
+
+# Copy published app
+COPY --from=build /app/publish .
+
+# Expose port
+EXPOSE 8080
+
+# Lambda Web Adapter config
+ENV ASPNETCORE_URLS=http://+:8080 \
+    AWS_LWA_ENABLE_COMPRESSION=false
+
+# Run the application
+ENTRYPOINT ["dotnet", "StarTracker.Api.dll"]
