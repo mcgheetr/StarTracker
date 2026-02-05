@@ -1,34 +1,42 @@
 # StarTracker
 
-StarTracker is a portfolio‑ready backend service for locating stars from a user’s location and recording observations with privacy‑first storage.
+[![CI](https://github.com/mcgheetr/StarTracker/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/mcgheetr/StarTracker/actions/workflows/ci.yml)
+[![Deploy](https://github.com/mcgheetr/StarTracker/actions/workflows/deploy.yml/badge.svg?branch=main)](https://github.com/mcgheetr/StarTracker/actions/workflows/deploy.yml)
+[![.NET](https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
+[![Terraform](https://img.shields.io/badge/Terraform-1.5+-623CE4?logo=terraform)](https://www.terraform.io/)
+[![AWS](https://img.shields.io/badge/AWS-Lambda-FF9900?logo=amazonaws)](https://aws.amazon.com/lambda/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-**Highlights**
-- Minimal API design with clean layering (API → Core → Infrastructure)
+StarTracker is a portfolio‑ready backend that turns a user’s location into clear, friendly star‑finding guidance — and stores observations with privacy‑first encryption.
+
+## **Highlights**
+- Clean layered architecture (API → Core → Infrastructure)
 - Field‑level encryption for sensitive coordinates
-- CI/CD‑ready with Terraform + GitHub Actions
 - DynamoDB storage with a queryable GSI
+- CI/CD with Terraform + GitHub Actions
 
-**Status**
-- ✅ Local dev and tests
-- ✅ AWS deploy via GitHub Actions
-- ✅ Remote Terraform state (S3 + DynamoDB)
+## **Quickstart**
 
-**Quick Links**
-- Live API: `https://2ujy1g942f.execute-api.us-east-1.amazonaws.com/`
-- Swagger UI: `http://localhost:5115/swagger`
-- Terraform: `infra/terraform`
+**Prereqs**
+- .NET 10 SDK
+- Docker (optional, for DynamoDB Local)
 
-**Core Flow**
-1. GET `/api/v1/stars/{target}/position?lat={lat}&lon={lon}&at={utc}`
-2. Receive RA/Dec, azimuth/altitude, and guidance text
-3. POST observations to `/api/v1/stars/{target}/observations`
+**Run locally (in‑memory repo)**
+```bash
+dotnet run --project src/StarTracker.Api
+```
 
-## **API Usage**
-
-**Health**
+**Health check**
 ```bash
 curl -H "X-API-Key: <key>" http://localhost:5000/api/v1/health
 ```
+
+## **Swagger**
+- UI: `http://localhost:5115/swagger`
+- JSON: `http://localhost:5115/swagger/v1/swagger.json`
+- Click **Authorize** and enter the `X-API-Key` value
+
+## **API Examples**
 
 **Get position**
 ```bash
@@ -45,35 +53,14 @@ curl -X POST \
   http://localhost:5000/api/v1/stars/Vega/observations
 ```
 
-**Swagger**
-- UI: `http://localhost:5115/swagger`
-- JSON: `http://localhost:5115/swagger/v1/swagger.json`
-- Click **Authorize** and enter the `X-API-Key` value
+## **Architecture**
 
-## **Live Deployment (AWS)**
-
-Base URL (Dev):
-```
-https://2ujy1g942f.execute-api.us-east-1.amazonaws.com/
-```
-
-Endpoints:
-- `GET /api/v1/health`
-- `GET /api/v1/stars/{target}/position?lat={lat}&lon={lon}&at={utc}`
-- `POST /api/v1/stars/{target}/observations`
-- `GET /api/v1/stars/{target}/observations`
-- `GET /api/v1/observations/{id}`
-
-Example:
-```bash
-curl -H "X-API-Key: <key>" https://2ujy1g942f.execute-api.us-east-1.amazonaws.com/api/v1/health
-```
+See `DESIGN.md` for the full system design and rationale.
 
 ## **Security & Privacy**
-
-- Coordinates are treated as sensitive and encrypted before storage.
-- Development uses ASP.NET Core Data Protection.
-- AWS KMS envelope encryption is scaffolded for production.
+- Coordinates are encrypted before storage.
+- Dev uses ASP.NET Core Data Protection.
+- KMS envelope encryption is scaffolded for production.
 
 Config example:
 ```json
@@ -92,12 +79,7 @@ dotnet build -c Release
 dotnet test -c Release --logger "console;verbosity=normal"
 ```
 
-**Run API (in‑memory repo)**
-```bash
-dotnet run --project src/StarTracker.Api
-```
-
-**Run with DynamoDB Local**
+**DynamoDB Local**
 ```bash
 docker-compose up -d dynamodb-local
 .\scripts\init-dynamodb-local.ps1
@@ -113,7 +95,7 @@ terraform init
 terraform apply
 ```
 
-Main Terraform stack:
+Main stack:
 ```bash
 cd infra/terraform
 terraform init
@@ -144,7 +126,10 @@ DynamoDB selection:
 }
 ```
 
-## **Conventions**
+## **License**
 
-- Coordinates are decimal degrees.
-- Prefer concise expressions and constants (e.g., `X-API-Key` header).
+MIT licensed. You’re free to use, modify, and distribute this project with attribution. See `LICENSE` for details.
+
+## **AI Guardrails**
+
+AI usage rules and safety constraints are documented in `docs/ai-guardrails.md`.
