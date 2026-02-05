@@ -42,17 +42,57 @@ public static class StarsEndpoints
         IGuidanceService guidanceSvc)
     {
         if (string.IsNullOrWhiteSpace(target))
-            return Results.Problem(detail: "target is required", statusCode: 400);
+        {
+            var problem = new Microsoft.AspNetCore.Mvc.ProblemDetails {
+                Status = 400,
+                Title = "Bad Request",
+                Detail = "target is required"
+            };
+            var json = System.Text.Json.JsonSerializer.Serialize(problem);
+            return Results.Content(json, "application/problem+json", statusCode: 400);
+        }
 
         if (!CoordinateNormalizer.TryParseDecimalDegrees(lat, out var nlat))
-            return Results.Problem(detail: "lat query parameter is required and must be decimal degrees", statusCode: 400);
+        {
+            var problem = new Microsoft.AspNetCore.Mvc.ProblemDetails {
+                Status = 400,
+                Title = "Bad Request",
+                Detail = "lat query parameter is required and must be decimal degrees"
+            };
+            var json = System.Text.Json.JsonSerializer.Serialize(problem);
+            return Results.Content(json, "application/problem+json", statusCode: 400);
+        }
         if (!CoordinateNormalizer.TryParseDecimalDegrees(lon, out var nlon))
-            return Results.Problem(detail: "lon query parameter is required and must be decimal degrees", statusCode: 400);
+        {
+            var problem = new Microsoft.AspNetCore.Mvc.ProblemDetails {
+                Status = 400,
+                Title = "Bad Request",
+                Detail = "lon query parameter is required and must be decimal degrees"
+            };
+            var json = System.Text.Json.JsonSerializer.Serialize(problem);
+            return Results.Content(json, "application/problem+json", statusCode: 400);
+        }
 
         if (nlat < -90 || nlat > 90)
-            return Results.Problem(detail: "lat must be between -90 and 90", statusCode: 400);
+        {
+            var problem = new Microsoft.AspNetCore.Mvc.ProblemDetails {
+                Status = 400,
+                Title = "Bad Request",
+                Detail = "lat must be between -90 and 90"
+            };
+            var json = System.Text.Json.JsonSerializer.Serialize(problem);
+            return Results.Content(json, "application/problem+json", statusCode: 400);
+        }
         if (nlon < -180 || nlon > 180)
-            return Results.Problem(detail: "lon must be between -180 and 180", statusCode: 400);
+        {
+            var problem = new Microsoft.AspNetCore.Mvc.ProblemDetails {
+                Status = 400,
+                Title = "Bad Request",
+                Detail = "lon must be between -180 and 180"
+            };
+            var json = System.Text.Json.JsonSerializer.Serialize(problem);
+            return Results.Content(json, "application/problem+json", statusCode: 400);
+        }
 
         var timestamp = at ?? DateTimeOffset.UtcNow;
 
@@ -63,7 +103,8 @@ public static class StarsEndpoints
         var guidance = guidanceSvc.GenerateGuidance(az, alt, target);
 
         var resp = new PositionResponseDto(target, ra, dec, az, alt, guidance, timestamp);
-        return Results.Ok(resp);
+        var jsonResp = System.Text.Json.JsonSerializer.Serialize(resp);
+        return Results.Content(jsonResp, "application/json", statusCode: 200);
     }
 
     private static async Task<IResult> CreateObservation(
@@ -73,11 +114,35 @@ public static class StarsEndpoints
         CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(target))
-            return Results.Problem(detail: "target is required", statusCode: 400);
+        {
+            var problem = new Microsoft.AspNetCore.Mvc.ProblemDetails {
+                Status = 400,
+                Title = "Bad Request",
+                Detail = "target is required"
+            };
+            var json = System.Text.Json.JsonSerializer.Serialize(problem);
+            return Results.Content(json, "application/problem+json", statusCode: 400);
+        }
         if (string.IsNullOrWhiteSpace(req.Observer))
-            return Results.Problem(detail: "Observer is required", statusCode: 400);
+        {
+            var problem = new Microsoft.AspNetCore.Mvc.ProblemDetails {
+                Status = 400,
+                Title = "Bad Request",
+                Detail = "Observer is required"
+            };
+            var json = System.Text.Json.JsonSerializer.Serialize(problem);
+            return Results.Content(json, "application/problem+json", statusCode: 400);
+        }
         if (req.RightAscensionDegrees < 0 || req.RightAscensionDegrees >= 360)
-            return Results.Problem(detail: "RightAscensionDegrees must be in [0, 360)", statusCode: 400);
+        {
+            var problem = new Microsoft.AspNetCore.Mvc.ProblemDetails {
+                Status = 400,
+                Title = "Bad Request",
+                Detail = "RightAscensionDegrees must be in [0, 360)"
+            };
+            var json = System.Text.Json.JsonSerializer.Serialize(problem);
+            return Results.Content(json, "application/problem+json", statusCode: 400);
+        }
         if (req.DeclinationDegrees < -90 || req.DeclinationDegrees > 90)
             return Results.Problem(detail: "DeclinationDegrees must be between -90 and 90", statusCode: 400);
 

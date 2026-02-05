@@ -268,7 +268,6 @@ app.MapGet("/api/v1/observations/{id}", GetObservationById);
 - [ ] Real astronomical calculations using ephemeris library
 - [ ] Rate limiting per API key
 - [ ] Query observations by observer name
-- [ ] OpenAPI/Swagger documentation
 
 ### Medium Term
 - [ ] GraphQL API for flexible queries
@@ -305,6 +304,7 @@ This project showcases:
 - ✅ **Production readiness**: Logging, configuration, error handling
 - ✅ **Modern .NET**: Minimal APIs, nullable reference types, async/await
 - ✅ **DevOps mindset**: Docker, Terraform, CI/CD readiness
+- ✅ **API docs**: OpenAPI/Swagger for discoverability
 
 ---
 

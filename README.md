@@ -1,140 +1,136 @@
 # StarTracker
 
-StarTracker is a small portfolio backend service that helps users locate stars from a given location and optionally record observations.
+StarTracker is a portfolio‑ready backend service for locating stars from a user’s location and recording observations with privacy‑first storage.
 
-## Design
+**Highlights**
+- Minimal API design with clean layering (API → Core → Infrastructure)
+- Field‑level encryption for sensitive coordinates
+- CI/CD‑ready with Terraform + GitHub Actions
+- DynamoDB storage with a queryable GSI
 
-1. User calls GET `/api/v1/stars/{target}/position?lat={lat}&lon={lon}&at={utc}` with decimal coordinates (lat/lon in decimal degrees). Inputs are normalized/rounded to 5 decimal places for storage.
-2. API returns celestial (`rightAscensionDegrees`, `declinationDegrees`) and horizontal (`azimuthDegrees`, `altitudeDegrees`) coordinates plus a human-friendly `guidance` field.
-3. User can POST an observation to `/api/v1/stars/{target}/observations` with RA/Dec as returned and metadata.
+**Status**
+- ✅ Local dev and tests
+- ✅ AWS deploy via GitHub Actions
+- ✅ Remote Terraform state (S3 + DynamoDB)
 
-## Security & privacy
+**Quick Links**
+- Live API: `https://2ujy1g942f.execute-api.us-east-1.amazonaws.com/`
+- Swagger UI: `http://localhost:5115/swagger`
+- Terraform: `infra/terraform`
 
-- Coordinates are treated as sensitive; repository implementations must encrypt coordinate fields before persisting. The development encryption service uses ASP.NET Core Data Protection. A KMS-based envelope encryption is scaffolded for production use.
+**Core Flow**
+1. GET `/api/v1/stars/{target}/position?lat={lat}&lon={lon}&at={utc}`
+2. Receive RA/Dec, azimuth/altitude, and guidance text
+3. POST observations to `/api/v1/stars/{target}/observations`
 
-## Examples
+## **API Usage**
 
-Health:
+**Health**
+```bash
+curl -H "X-API-Key: <key>" http://localhost:5000/api/v1/health
+```
 
-- `curl -H "X-API-Key: <key>" http://localhost:5000/api/v1/health`
+**Get position**
+```bash
+curl -H "X-API-Key: <key>" \
+  "http://localhost:5000/api/v1/stars/Polaris/position?lat=37.70443&lon=-77.41832&at=2026-01-29T16:00:00Z"
+```
 
-Swagger (OpenAPI):
+**Create observation**
+```bash
+curl -X POST \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: <key>" \
+  -d '{"observedAt":"2026-01-29T16:00:00Z","rightAscensionDegrees":80,"declinationDegrees":38.78,"observer":"me","notes":"note"}' \
+  http://localhost:5000/api/v1/stars/Vega/observations
+```
 
+**Swagger**
 - UI: `http://localhost:5115/swagger`
 - JSON: `http://localhost:5115/swagger/v1/swagger.json`
-- API key: click **Authorize** and enter the `X-API-Key` value
+- Click **Authorize** and enter the `X-API-Key` value
 
-Get position (compass guidance):
+## **Live Deployment (AWS)**
 
-- `curl -H "X-API-Key: <key>" "http://localhost:5000/api/v1/stars/Polaris/position?lat=37.70443&lon=-77.41832&at=2026-01-29T16:00:00Z"`
+Base URL (Dev):
+```
+https://2ujy1g942f.execute-api.us-east-1.amazonaws.com/
+```
 
-Get position (telescope users)
-
-- If you have a telescope that accepts RA/Dec you can use the `rightAscensionDegrees` and `declinationDegrees` fields from the response directly to point your instrument.
-
-Create observation:
-
-- `curl -X POST -H "Content-Type: application/json" -H "X-API-Key: <key>" -d '{"observedAt":"2026-01-29T16:00:00Z","rightAscensionDegrees":80,"declinationDegrees":38.78,"observer":"me","notes":"note"}' http://localhost:5000/api/v1/stars/Vega/observations`
-
-### Live Deployment (AWS)
-
-The API is deployed to AWS Lambda with API Gateway:
-
-**Base URL (Dev):** `https://2ujy1g942f.execute-api.us-east-1.amazonaws.com/`
-
-**Endpoints:**
-- `GET /api/v1/health` - Health check
-- `GET /api/v1/stars/{target}/position?lat={lat}&lon={lon}&at={utc}` - Get star position
-- `POST /api/v1/stars/{target}/observations` - Create observation
-- `GET /api/v1/stars/{target}/observations` - Get observations for a target
-- `GET /api/v1/observations/{id}` - Get observation by ID
+Endpoints:
+- `GET /api/v1/health`
+- `GET /api/v1/stars/{target}/position?lat={lat}&lon={lon}&at={utc}`
+- `POST /api/v1/stars/{target}/observations`
+- `GET /api/v1/stars/{target}/observations`
+- `GET /api/v1/observations/{id}`
 
 Example:
 ```bash
 curl -H "X-API-Key: <key>" https://2ujy1g942f.execute-api.us-east-1.amazonaws.com/api/v1/health
 ```
 
-Notes on encryption provider (dev vs prod):
+## **Security & Privacy**
 
-- By default the application uses ASP.NET Core Data Protection for field-level encryption (development/test friendly). To enable the mocked AWS Encryption SDK path configure `appsettings.json` or environment vars:
+- Coordinates are treated as sensitive and encrypted before storage.
+- Development uses ASP.NET Core Data Protection.
+- AWS KMS envelope encryption is scaffolded for production.
 
+Config example:
 ```json
 {"Encryption": { "UseAwsSdk": "true", "KmsKeyId": "alias/mykey" }}
 ```
 
-- When the AWS SDK integration is wired, the envelope encryptor will delegate to the `AWS.Cryptography.EncryptionSDK` for production-grade envelope handling.
+## **Local Development**
 
-
-
-## Development
-
-### Build and test locally
-
-Build the solution:
+**Build**
 ```bash
 dotnet build -c Release
 ```
 
-Run tests with visible output (shows all passed/failed tests):
+**Test**
 ```bash
 dotnet test -c Release --logger "console;verbosity=normal"
 ```
 
-Note: The `--logger "console;verbosity=normal"` flag is required to see test output and results in the terminal. Without it, test results are not displayed.
-
-Run a specific test project:
-```bash
-dotnet test tests/StarTracker.Tests -c Release --logger "console;verbosity=normal"
-```
-
-### Run the API locally
-
-Prerequisites:
-- .NET 8 SDK
-- Optional: set `ApiKey` in `appsettings.Development.json` or via `ApiKey` environment variable
-
-**With InMemory Repository (default):**
+**Run API (in‑memory repo)**
 ```bash
 dotnet run --project src/StarTracker.Api
 ```
 
-**With DynamoDB Local:**
-
-First, start DynamoDB Local using Docker:
+**Run with DynamoDB Local**
 ```bash
 docker-compose up -d dynamodb-local
-```
-
-Initialize the DynamoDB table:
-```bash
 .\scripts\init-dynamodb-local.ps1
-```
-
-Then run the API with DynamoDB Local configuration:
-```bash
 dotnet run --project src/StarTracker.Api --launch-profile DynamoDBLocal
 ```
 
-The API will start on `http://localhost:5115`. Use the examples in the [Examples](#examples) section above.
+## **Terraform + CI/CD**
 
-To stop DynamoDB Local:
+Bootstrap remote state (one‑time):
 ```bash
-docker-compose down
+cd infra/terraform/bootstrap
+terraform init
+terraform apply
 ```
 
-### Repository Configuration
+Main Terraform stack:
+```bash
+cd infra/terraform
+terraform init
+terraform plan -var="api_key=your-secure-key"
+terraform apply -var="api_key=your-secure-key"
+```
 
-The repository can be switched via `appsettings.json`:
+## **Configuration**
 
+Repository selection:
 ```json
 {
-  "Repository": {
-    "Type": "InMemory"
-  }
+  "Repository": { "Type": "InMemory" }
 }
 ```
 
-Or for DynamoDB (see `appsettings.DynamoDBLocal.json` for example):
+DynamoDB selection:
 ```json
 {
   "Repository": {
@@ -148,17 +144,7 @@ Or for DynamoDB (see `appsettings.DynamoDBLocal.json` for example):
 }
 ```
 
-## Terraform scaffold
+## **Conventions**
 
-See `infra/terraform` for the deployment scaffold. Before running CI/CD, bootstrap remote state:
-
-```bash
-cd infra/terraform/bootstrap
-terraform init
-terraform apply
-```
-
-## Conventions
-
-- Coordinates: decimal degrees only for now.
-- Code style: use global usings and primary constructors where sensible; prefer concise expressions and constants for repeated values such as the API key header.
+- Coordinates are decimal degrees.
+- Prefer concise expressions and constants (e.g., `X-API-Key` header).
