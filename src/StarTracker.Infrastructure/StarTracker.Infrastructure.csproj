@@ -1,20 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <ItemGroup>
     <ProjectReference Include="..\StarTracker.Core\StarTracker.Core.csproj" />
   </ItemGroup>
-
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="8.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="10.0.2" />
     <PackageReference Include="AWSSDK.KeyManagementService" Version="3.7.3.20" />
     <PackageReference Include="AWSSDK.DynamoDBv2" Version="3.7.101.8" />
     <PackageReference Include="AWS.Cryptography.EncryptionSDK" Version="4.0.0" />
+    <PackageReference Include="BouncyCastle.Cryptography" Version="2.7.0-beta.98" />
   </ItemGroup>
-
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
-
 </Project>

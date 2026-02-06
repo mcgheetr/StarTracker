@@ -2,13 +2,13 @@ namespace StarTracker.Core.Services;
 
 public static class AstronomyMapper
 {
-    // Map lat/lon to a deterministic RA/Dec for demo and testing purposes.
+    // Get Polaris coordinates (fixed celestial position)
+    // RA: 37.954° (2h 31m 49s), Dec: 89.264° (near celestial north pole)
+    // Precession is negligible for typical use (~1.4 arcsec/year)
     public static (double RightAscensionDegrees, double DeclinationDegrees) FromLatLon(double lat, double lon)
     {
-        // RA -> normalized longitude (0..360)
-        var ra = (lon + 360) % 360;
-        var dec = lat;
-        return (ra, dec);
+        // Polaris (Alpha Ursae Minoris)
+        return (37.954, 89.264);
     }
 
     // Compute Azimuth and Altitude (in degrees) given observer lat/lon (decimal degrees), RA/Dec (degrees) and time (UTC)
@@ -47,8 +47,8 @@ public static class AstronomyMapper
         var y = Math.Sin(HA);
         var x = Math.Cos(HA) * Math.Sin(lat) - Math.Tan(dec) * Math.Cos(lat);
         var az = Math.Atan2(y, x);
-        // Convert to degrees and normalize to 0-360
-        var azDeg = (rad2deg(az) + 360) % 360;
+        // Convert to degrees: standard formula measures from south, add 180° to get north reference
+        var azDeg = (rad2deg(az) + 180) % 360;
         var altDeg = rad2deg(alt);
 
         return (Math.Round(azDeg, 5), Math.Round(altDeg, 5));

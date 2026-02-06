@@ -21,8 +21,8 @@ public class PositionEndpointTests(WebApplicationFactory<Program> factory) : ICl
         var pos = await response.Content.ReadFromJsonAsync<PositionResponseDto>();
         Assert.NotNull(pos);
         Assert.Equal("Polaris", pos!.Target);
-        Assert.Equal(37.70443, pos.DeclinationDegrees, 6);
-        Assert.Equal(282.58168, pos.RightAscensionDegrees, 5);
+        Assert.Equal(89.264, pos.DeclinationDegrees, 6);
+        Assert.Equal(37.954, pos.RightAscensionDegrees, 6);
         Assert.InRange(pos.AzimuthDegrees, 0, 360);
         Assert.InRange(pos.AltitudeDegrees, -90, 90);
         Assert.Contains("Polaris", pos.Guidance, StringComparison.OrdinalIgnoreCase);
@@ -32,8 +32,8 @@ public class PositionEndpointTests(WebApplicationFactory<Program> factory) : ICl
         Assert.Equal(HttpStatusCode.OK, response2.StatusCode);
         var pos2 = await response2.Content.ReadFromJsonAsync<PositionResponseDto>();
         Assert.NotNull(pos2);
-        Assert.Equal(37.70000, Math.Round(pos2!.DeclinationDegrees, 5));
-        Assert.Equal(282.60000, Math.Round(pos2.RightAscensionDegrees, 5));
+        Assert.Equal(89.264, Math.Round(pos2!.DeclinationDegrees, 5));
+        Assert.Equal(37.954, Math.Round(pos2.RightAscensionDegrees, 5));
         Assert.InRange(pos2.AzimuthDegrees, 0, 360);
         Assert.InRange(pos2.AltitudeDegrees, -90, 90);
 

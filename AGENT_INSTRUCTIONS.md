@@ -1,5 +1,7 @@
 # Agent Instructions
 
+See `docs/ai-guardrails.md` for the canonical AI usage and safety guidelines.
+
 You are allowed to:
 - Create and modify code in src/ and tests/
 - Create Terraform in infra/

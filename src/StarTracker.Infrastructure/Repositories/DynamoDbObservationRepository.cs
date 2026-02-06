@@ -77,18 +77,24 @@ public class DynamoDbObservationRepository : IObservationRepository
         DateTimeOffset? to,
         CancellationToken cancellationToken = default)
     {
-        // Query by Target (GSI required for efficient querying by target)
-        // For now, use Scan with filter (not efficient for large data, but works)
-        var scanFilter = new ScanFilter();
-        scanFilter.AddCondition("Target", ScanOperator.Equal, target);
+        // Query by Target using GSI (TargetIndex) for efficient access by target + time range
+        var queryFilter = new QueryFilter("Target", QueryOperator.Equal, target);
 
-        if (from.HasValue)
-            scanFilter.AddCondition("ObservedAt", ScanOperator.GreaterThanOrEqual, from.Value.UtcTicks);
+        if (from.HasValue && to.HasValue)
+            queryFilter.AddCondition("ObservedAt", QueryOperator.Between, from.Value.UtcTicks, to.Value.UtcTicks);
+        else if (from.HasValue)
+            queryFilter.AddCondition("ObservedAt", QueryOperator.GreaterThanOrEqual, from.Value.UtcTicks);
+        else if (to.HasValue)
+            queryFilter.AddCondition("ObservedAt", QueryOperator.LessThanOrEqual, to.Value.UtcTicks);
 
-        if (to.HasValue)
-            scanFilter.AddCondition("ObservedAt", ScanOperator.LessThanOrEqual, to.Value.UtcTicks);
+        var config = new QueryOperationConfig
+        {
+            IndexName = "TargetIndex",
+            Filter = queryFilter,
+            ConsistentRead = false
+        };
 
-        var search = _table.Scan(scanFilter);
+        var search = _table.Query(config);
         var documents = new List<Document>();
 
         do
