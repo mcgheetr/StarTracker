@@ -1,0 +1,7 @@
+{
+  "/api": {
+    "target": "http://host.docker.internal:5115",
+    "secure": false,
+    "changeOrigin": true
+  }
+}

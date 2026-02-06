@@ -86,6 +86,14 @@ docker-compose up -d dynamodb-local
 dotnet run --project src/StarTracker.Api --launch-profile DynamoDBLocal
 ```
 
+**Angular UI (Docker, no local Node install)**
+```bash
+docker run --rm -it -p 4200:4200 -v "%cd%/web:/app" -w /app node:24-alpine \
+  sh -c "npm install && npm start -- --host 0.0.0.0 --port 4200"
+```
+
+Then open `http://localhost:4200`. The UI uses a local proxy, so set the API base URL to `/api`.
+
 ## **Terraform + CI/CD**
 
 Bootstrap remote state (one‑time):
