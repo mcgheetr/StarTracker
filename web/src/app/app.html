@@ -1,0 +1,109 @@
+<main class="page">
+  <header class="hero">
+    <p class="eyebrow">StarTracker UI</p>
+    <h1>Find your target star fast.</h1>
+    <p class="lede">
+      Enter a target, location, and time. The API returns RA/Dec, az/alt, and guidance.
+    </p>
+  </header>
+
+  <section class="panel">
+    <form (ngSubmit)="locate()" class="form" #locateForm="ngForm">
+      <div class="grid">
+        <label class="field">
+          <span>Target</span>
+          <input type="text" name="target" [(ngModel)]="target" (input)="onTargetInput($event)" placeholder="Polaris" required>
+        </label>
+
+        <label class="field">
+          <span>Latitude</span>
+          <input type="number" step="0.00001" name="lat" [(ngModel)]="lat" (input)="onLatInput($event)" required>
+        </label>
+
+        <label class="field">
+          <span>Longitude</span>
+          <input type="number" step="0.00001" name="lon" [(ngModel)]="lon" (input)="onLonInput($event)" required>
+        </label>
+
+        <label class="field">
+          <span>At (local time)</span>
+          <input type="datetime-local" name="atLocal" [(ngModel)]="atLocal" (input)="onAtInput($event)">
+          <small class="helper">Tip: change the time to see the sky rotate.</small>
+        </label>
+
+        <label class="field">
+          <span>API Key</span>
+          <input type="password" name="apiKey" [(ngModel)]="apiKey" (input)="onApiKeyInput($event)" placeholder="X-API-Key">
+        </label>
+
+        <label class="field">
+          <span>API Base URL</span>
+          <input type="text" name="baseUrl" [(ngModel)]="baseUrl" (input)="onBaseUrlInput($event)" placeholder="/api">
+        </label>
+      </div>
+
+      <div class="actions">
+        <button type="submit" [disabled]="loading">
+          {{ loading ? 'Locating...' : 'Locate Star' }}
+        </button>
+        <p class="hint">Tip: use <code>/api</code> for local dev with the proxy.</p>
+      </div>
+    </form>
+  </section>
+
+  <section class="panel error" *ngIf="error">
+    <strong>Request failed</strong>
+    <span>{{ error }}</span>
+  </section>
+
+  <section class="panel result" *ngIf="result" #resultPanel>
+    <div class="result-header">
+      <h2>{{ result.target }}</h2>
+      <span class="timestamp">UTC: {{ result.at }}</span>
+    </div>
+    <p class="guidance">{{ result.guidance }}</p>
+
+    <div class="metrics">
+      <div>
+        <span class="label">RA (deg)</span>
+        <span class="value">{{ result.rightAscensionDegrees }}</span>
+      </div>
+      <div>
+        <span class="label">Dec (deg)</span>
+        <span class="value">{{ result.declinationDegrees }}</span>
+      </div>
+      <div>
+        <span class="label">Azimuth (deg)</span>
+        <span class="value">{{ result.azimuthDegrees }}</span>
+      </div>
+      <div>
+        <span class="label">Altitude (deg)</span>
+        <span class="value">{{ result.altitudeDegrees }}</span>
+      </div>
+    </div>
+
+    <details class="raw">
+      <summary>Raw response</summary>
+      <pre>{{ result | json }}</pre>
+    </details>
+  </section>
+
+  <section class="panel sky">
+    <div class="sky-header">
+      <div>
+        <h2>Sky Map</h2>
+    <p class="lede">Projected view of Ursa Major and Ursa Minor for your location and time.</p>
+      </div>
+    </div>
+
+    <div class="sky-canvas">
+      <app-sky-map
+        [lat]="latNumber"
+        [lon]="lonNumber"
+        [date]="skyDate"
+        [highlight]="result?.target ?? target">
+      </app-sky-map>
+    </div>
+    <p class="hint">Tip: Enter your lat/lon to center the map on your view.</p>
+  </section>
+</main>

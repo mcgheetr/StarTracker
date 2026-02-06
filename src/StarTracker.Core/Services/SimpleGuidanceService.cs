@@ -27,11 +27,13 @@ public class SimpleGuidanceService : IGuidanceService
         // Special-case for Polaris: we prefer a clearer message
         if (string.Equals(target, "Polaris", StringComparison.OrdinalIgnoreCase))
         {
+            var polarisNote = "Polaris (the North Star) sits at the end of the Little Dipper's handle.";
+
             // If azimuth is near north, say due north
             if (Math.Abs(az - 0) < 10 || Math.Abs(az - 360) < 10)
-                return $"Look {compass} at about {altRounded}° up for the brightest object — that's Polaris!";
+                return $"Look {compass} at about {altRounded}° up. {polarisNote}";
 
-            return $"Face {compass} (approx {Math.Round(az)}°), then look {altRounded}° up to see Polaris.";
+            return $"Face {compass} (approx {Math.Round(az)}°), then look {altRounded}° up. {polarisNote}";
         }
 
         return $"Face {compass} (≈{Math.Round(az)}°), then look {altRounded}° up to find {target}.";
