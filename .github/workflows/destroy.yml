@@ -34,10 +34,12 @@ jobs:
       - name: Safety check - verify portfolio tag
         working-directory: ./infra/terraform
         run: |
-          if terraform output -json | grep -q '"purpose".*"portfolio"'; then
+          # `terraform output` only includes declared outputs, not resource tags.
+          # Check state JSON directly for the default AWS tag Purpose=portfolio.
+          if terraform show -json | grep -Eq '"Purpose"[[:space:]]*:[[:space:]]*"portfolio"'; then
             echo "✓ Portfolio tag verified - safe to destroy"
           else
-            echo "✗ Portfolio tag not found in state - aborting destroy"
+            echo "✗ Purpose=portfolio tag not found in Terraform state - aborting destroy"
             exit 1
           fi
       
