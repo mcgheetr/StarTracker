@@ -1,6 +1,13 @@
 name: Destroy Infrastructure
 
 on:
+  push:
+    branches:
+      - 'feat/**'
+      - 'dev/**'
+    paths:
+      - '.github/workflows/destroy.yml'
+      - 'infra/terraform/**'
   schedule:
     # Destroy daily at 10 PM UTC
     - cron: '0 22 * * *'
@@ -42,8 +49,20 @@ jobs:
             echo "✗ Purpose=portfolio tag not found in Terraform state - aborting destroy"
             exit 1
           fi
+
+      - name: Terraform Destroy Plan (safe preview only)
+        if: github.event_name == 'push'
+        working-directory: ./infra/terraform
+        run: |
+          terraform plan -destroy \
+            -var="region=us-east-1" \
+            -var="environment=dev" \
+            -var="image_tag=latest" \
+            -var="api_key=${{ secrets.API_KEY }}" \
+            -out=tfdestroyplan
       
       - name: Terraform Destroy
+        if: github.event_name != 'push'
         working-directory: ./infra/terraform
         run: |
           terraform destroy \
@@ -56,5 +75,10 @@ jobs:
       - name: Notification
         if: always()
         run: |
-          echo "## Infrastructure Destroyed" >> $GITHUB_STEP_SUMMARY
-          echo "Scheduled or manual destruction completed." >> $GITHUB_STEP_SUMMARY
+          if [ "${{ github.event_name }}" = "push" ]; then
+            echo "## Destroy Preview Complete" >> $GITHUB_STEP_SUMMARY
+            echo "Branch push executed a destroy plan only (no resources destroyed)." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "## Infrastructure Destroyed" >> $GITHUB_STEP_SUMMARY
+            echo "Scheduled or manual destruction completed." >> $GITHUB_STEP_SUMMARY
+          fi

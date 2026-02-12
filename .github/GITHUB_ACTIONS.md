@@ -10,20 +10,25 @@ This repo includes automated CI/CD workflows for testing and deploying StarTrack
 - **No secrets required**
 
 ### `deploy.yml` - Automated Deployment
-- **Trigger**: Manual (`workflow_dispatch`)
+- **Triggers**:
+  - Manual (`workflow_dispatch`) for real deployment
+  - Push to `feat/**` or `dev/**` for safe preview
 - **Actions**: 
   - Run CI tests
-  - Build Docker image (Lambda-optimized)
-  - Push to ECR
-  - Apply Terraform
-  - Health check API
+  - On manual runs: build Docker image, push to ECR, apply Terraform, health check
+  - On branch pushes: Terraform plan only (no apply, no Docker push)
 - **Requires**: AWS credentials, API key
 - **Output**: Deployment summary with live API URL
 
 ### `destroy.yml` - Infrastructure Cleanup
-- **Trigger**: Daily at 10 PM UTC or manual
-- **Actions**: Terraform destroy with safety check
-- **Safety**: Only destroys if infrastructure has `purpose=portfolio` tag
+- **Triggers**:
+  - Daily at 10 PM UTC (`schedule`)
+  - Manual (`workflow_dispatch`)
+  - Push to `feat/**` or `dev/**` for safe preview
+- **Actions**:
+  - On schedule/manual runs: Terraform destroy with safety check
+  - On branch pushes: Terraform destroy plan only (no destruction)
+- **Safety**: Only allows destructive run if state includes `Purpose=portfolio` tag
 - **Requires**: AWS credentials, API key
 
 ## Setup Instructions
@@ -68,6 +73,18 @@ Attach these policies to the OIDC role:
 - `AWSLambda_FullAccess`
 - `AmazonAPIGatewayAdministrator`
 - `AmazonEC2ContainerRegistryFullAccess`
+- IAM permissions for Terraform-managed Lambda role lifecycle (at minimum):
+  - `iam:CreateRole`
+  - `iam:DeleteRole`
+  - `iam:GetRole`
+  - `iam:PassRole`
+  - `iam:AttachRolePolicy`
+  - `iam:DetachRolePolicy`
+  - `iam:PutRolePolicy`
+  - `iam:DeleteRolePolicy`
+  - `iam:ListRolePolicies`
+  - `iam:ListAttachedRolePolicies`
+  - `iam:ListInstanceProfilesForRole`
 
 ### 4. Run Your First Deploy
 
@@ -89,6 +106,31 @@ gh workflow run deploy.yml \
   -f region=us-east-1
 ```
 
+## Safe Branch Testing (No PR Required)
+
+Use these patterns when you want to validate workflow changes without merging to `main`.
+
+1. **Push to a feature/dev branch (`feat/**` or `dev/**`)**
+   - `deploy.yml` runs test + Terraform plan preview only.
+   - `destroy.yml` runs safety check + destroy plan preview only.
+   - No resources are deployed or destroyed by these push-triggered previews.
+
+2. **Run real deploy from your branch (manual)**
+```bash
+gh workflow run deploy.yml \
+  --ref feat/your-branch \
+  -f environment=dev \
+  -f region=us-east-1
+```
+
+3. **Run real destroy from your branch (manual)**
+```bash
+gh workflow run destroy.yml --ref feat/your-branch
+```
+
+4. **Scheduled destroy still runs from default branch**
+   - GitHub schedule events execute from the repository default branch (`main`).
+
 ## Troubleshooting
 
 **Deploy fails with "No valid credential sources"**
@@ -101,8 +143,8 @@ gh workflow run deploy.yml \
 - Check CloudWatch logs: `aws logs tail /aws/lambda/startracker-dev --follow`
 
 **Destroy workflow fails**
-- Verify Terraform state has `purpose=portfolio` output
-- Check state file in `infra/terraform/terraform.tfstate`
+- Verify Terraform state includes the `Purpose=portfolio` tag
+- Confirm the GitHub Actions IAM role can run IAM role lifecycle APIs, including `iam:ListInstanceProfilesForRole`
 
 ## Cost Considerations
 
