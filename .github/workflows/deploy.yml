@@ -110,6 +110,26 @@ jobs:
         with:
           role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.5.0
+
+      - name: Terraform Init
+        working-directory: ./infra/terraform
+        run: terraform init
+
+      - name: Bootstrap ECR for image push
+        working-directory: ./infra/terraform
+        run: |
+          terraform apply -auto-approve \
+            -var="region=${{ env.AWS_REGION }}" \
+            -var="environment=${{ env.DEPLOY_ENV }}" \
+            -var="image_tag=latest" \
+            -var="api_key=${{ secrets.API_KEY }}" \
+            -target=aws_ecr_repository.startracker \
+            -target=aws_ecr_lifecycle_policy.startracker
       
       - name: Login to Amazon ECR
         id: login-ecr
@@ -129,15 +149,6 @@ jobs:
             ${{ steps.login-ecr.outputs.registry }}/startracker-${{ env.DEPLOY_ENV }}:latest
           platforms: linux/amd64
           provenance: false
-      
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_version: 1.5.0
-      
-      - name: Terraform Init
-        working-directory: ./infra/terraform
-        run: terraform init
       
       - name: Terraform Plan
         working-directory: ./infra/terraform
