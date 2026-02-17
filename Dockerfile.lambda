@@ -9,7 +9,7 @@ COPY src/StarTracker.Core/StarTracker.Core.csproj src/StarTracker.Core/
 COPY src/StarTracker.Infrastructure/StarTracker.Infrastructure.csproj src/StarTracker.Infrastructure/
 
 # Restore dependencies
-RUN dotnet restore
+RUN dotnet restore src/StarTracker.Api/StarTracker.Api.csproj
 
 # Copy source code
 COPY src/ src/
