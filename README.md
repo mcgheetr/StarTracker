@@ -1,7 +1,8 @@
 # StarTracker
 
 [![CI](https://github.com/mcgheetr/StarTracker/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/mcgheetr/StarTracker/actions/workflows/ci.yml)
-[![Deploy](https://github.com/mcgheetr/StarTracker/actions/workflows/deploy.yml/badge.svg?branch=main)](https://github.com/mcgheetr/StarTracker/actions/workflows/deploy.yml)
+[![Deploy](https://github.com/mcgheetr/StarTracker/actions/workflows/deploy.yml/badge.svg?event=workflow_dispatch)](https://github.com/mcgheetr/StarTracker/actions/workflows/deploy.yml)
+[![Destroy](https://github.com/mcgheetr/StarTracker/actions/workflows/destroy.yml/badge.svg?event=schedule)](https://github.com/mcgheetr/StarTracker/actions/workflows/destroy.yml)
 [![.NET](https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
 [![Terraform](https://img.shields.io/badge/Terraform-1.5+-623CE4?logo=terraform)](https://www.terraform.io/)
 [![AWS](https://img.shields.io/badge/AWS-Lambda-FF9900?logo=amazonaws)](https://aws.amazon.com/lambda/)
