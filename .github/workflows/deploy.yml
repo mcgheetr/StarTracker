@@ -3,6 +3,7 @@ name: Deploy
 on:
   push:
     branches:
+      - 'main'
       - 'feat/**'
       - 'dev/**'
     paths:
@@ -35,7 +36,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: '10.0.x'
       
       - name: Restore dependencies
         run: dotnet restore
@@ -47,7 +48,7 @@ jobs:
         run: dotnet test -c Release --no-build --logger "console;verbosity=normal"
 
   preview:
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && github.ref != 'refs/heads/main'
     needs: test
     runs-on: ubuntu-latest
     permissions:
@@ -91,12 +92,15 @@ jobs:
           echo "- Result: Terraform plan only (no apply, no Docker push)" >> $GITHUB_STEP_SUMMARY
 
   deploy:
-    if: github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
     needs: test
     runs-on: ubuntu-latest
     permissions:
       id-token: write
       contents: read
+    env:
+      DEPLOY_ENV: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'dev' }}
+      AWS_REGION: ${{ github.event_name == 'workflow_dispatch' && inputs.region || 'us-east-1' }}
     
     steps:
       - uses: actions/checkout@v4
@@ -105,7 +109,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
-          aws-region: ${{ inputs.region }}
+          aws-region: ${{ env.AWS_REGION }}
       
       - name: Login to Amazon ECR
         id: login-ecr
@@ -121,8 +125,8 @@ jobs:
           file: ./Dockerfile.lambda
           push: true
           tags: |
-            ${{ steps.login-ecr.outputs.registry }}/startracker-${{ inputs.environment }}:${{ github.sha }}
-            ${{ steps.login-ecr.outputs.registry }}/startracker-${{ inputs.environment }}:latest
+            ${{ steps.login-ecr.outputs.registry }}/startracker-${{ env.DEPLOY_ENV }}:${{ github.sha }}
+            ${{ steps.login-ecr.outputs.registry }}/startracker-${{ env.DEPLOY_ENV }}:latest
           platforms: linux/amd64
           provenance: false
       
@@ -139,8 +143,8 @@ jobs:
         working-directory: ./infra/terraform
         run: |
           terraform plan \
-            -var="region=${{ inputs.region }}" \
-            -var="environment=${{ inputs.environment }}" \
+            -var="region=${{ env.AWS_REGION }}" \
+            -var="environment=${{ env.DEPLOY_ENV }}" \
             -var="image_tag=latest" \
             -var="api_key=${{ secrets.API_KEY }}" \
             -out=tfplan
@@ -167,7 +171,7 @@ jobs:
       - name: Deployment summary
         run: |
           echo "## Deployment Complete" >> $GITHUB_STEP_SUMMARY
-          echo "- **Environment**: ${{ inputs.environment }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Region**: ${{ inputs.region }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Environment**: ${{ env.DEPLOY_ENV }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Region**: ${{ env.AWS_REGION }}" >> $GITHUB_STEP_SUMMARY
           echo "- **API URL**: ${{ steps.output.outputs.api_url }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Image**: startracker-${{ inputs.environment }}:latest" >> $GITHUB_STEP_SUMMARY
+          echo "- **Image**: startracker-${{ env.DEPLOY_ENV }}:latest" >> $GITHUB_STEP_SUMMARY
