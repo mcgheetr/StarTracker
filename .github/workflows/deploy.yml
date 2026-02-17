@@ -1,6 +1,15 @@
 name: Deploy
 
 on:
+  push:
+    branches:
+      - 'feat/**'
+      - 'dev/**'
+    paths:
+      - '.github/workflows/deploy.yml'
+      - 'infra/terraform/**'
+      - 'src/**'
+      - 'Dockerfile.lambda'
   workflow_dispatch:
     inputs:
       environment:
@@ -37,7 +46,52 @@ jobs:
       - name: Test
         run: dotnet test -c Release --no-build --logger "console;verbosity=normal"
 
+  preview:
+    if: github.event_name == 'push'
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
+          aws-region: us-east-1
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.5.0
+
+      - name: Terraform Init
+        working-directory: ./infra/terraform
+        run: terraform init
+
+      - name: Terraform Plan (safe preview only)
+        working-directory: ./infra/terraform
+        run: |
+          terraform plan \
+            -var="region=us-east-1" \
+            -var="environment=dev" \
+            -var="image_tag=latest" \
+            -var="api_key=${{ secrets.API_KEY }}" \
+            -out=tfplan
+
+      - name: Preview summary
+        run: |
+          echo "## Deploy Preview Complete" >> $GITHUB_STEP_SUMMARY
+          echo "- Trigger: branch push" >> $GITHUB_STEP_SUMMARY
+          echo "- Environment: dev" >> $GITHUB_STEP_SUMMARY
+          echo "- Region: us-east-1" >> $GITHUB_STEP_SUMMARY
+          echo "- Result: Terraform plan only (no apply, no Docker push)" >> $GITHUB_STEP_SUMMARY
+
   deploy:
+    if: github.event_name == 'workflow_dispatch'
     needs: test
     runs-on: ubuntu-latest
     permissions:

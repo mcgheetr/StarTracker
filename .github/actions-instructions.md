@@ -4,8 +4,8 @@ Goal: CI/CD that is simple, secure, and cost-aware for a portfolio AWS deploymen
 
 ## Workflows
 1) CI: build + test on PRs and main
-2) Deploy: manual (workflow_dispatch) and/or on main merges
-3) Destroy: scheduled nightly + manual
+2) Deploy: manual (workflow_dispatch) for real deploys; feature-branch push for safe preview plan
+3) Destroy: scheduled nightly + manual for real destroys; feature-branch push for safe destroy-plan preview
 
 ## Rules
 - No secrets in repo. Use GitHub Secrets for AWS creds.
