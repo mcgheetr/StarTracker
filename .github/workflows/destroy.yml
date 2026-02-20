@@ -41,22 +41,20 @@ jobs:
       - name: Safety check - verify portfolio tag
         working-directory: ./infra/terraform
         run: |
-          # `terraform output` only includes declared outputs, not resource tags.
-          # Use state presence + known project markers as safety checks.
+          # Deterministic safety check:
+          # Allow destroy only when state is empty or contains only known StarTracker addresses.
           if ! terraform state list > tfstate.list 2>/dev/null; then
             echo "✓ No Terraform state found - safe to continue"
           elif [ ! -s tfstate.list ]; then
             echo "✓ Terraform state is empty - safe to continue"
           else
-            terraform show -json > tfshow.json
-            if grep -Eq '"Purpose"[[:space:]]*:[[:space:]]*"portfolio"' tfshow.json; then
-              echo "✓ Portfolio tag verified - safe to destroy"
-            elif grep -Eiq 'startracker|/aws/apigateway/startracker' tfshow.json; then
-              echo "✓ State contains StarTracker resources - safe to destroy"
-            else
-              echo "✗ Non-empty state does not appear to be StarTracker/portfolio - aborting destroy"
+            ALLOWED='^(aws_apigatewayv2_api\.startracker|aws_apigatewayv2_stage\.default|aws_cloudwatch_log_group\.api_gateway|aws_ecr_repository\.startracker|aws_ecr_lifecycle_policy\.startracker|aws_lambda_function\.startracker|aws_iam_role\.lambda|aws_iam_role_policy_attachment\.lambda_basic|aws_iam_role_policy\.lambda_dynamodb|aws_apigatewayv2_integration\.lambda|aws_apigatewayv2_route\.lambda_default|aws_lambda_permission\.api_gateway|aws_dynamodb_table\.observations)$'
+            if grep -Ev "$ALLOWED" tfstate.list > unexpected.list; then
+              echo "✗ Found unexpected Terraform state addresses; aborting destroy"
+              cat unexpected.list
               exit 1
             fi
+            echo "✓ State contains only expected StarTracker resources - safe to destroy"
           fi
 
       - name: Terraform Destroy Plan (safe preview only)
