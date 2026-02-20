@@ -170,9 +170,9 @@ jobs:
         working-directory: ./infra/terraform
         id: output
         run: |
-          api_url="$(terraform output -raw api_gateway_url 2>/dev/null \
-            | sed -e 's/\r//g' -e '/^\[command\]/d' -e '/^::/d' \
-            | grep -Eo 'https?://[^ ]+' | tail -n1)"
+          tfout="$(terraform output -json)"
+
+          api_url="$(printf '%s' "$tfout" | jq -r '.api_gateway_url.value // empty')"
           if [ -z "$api_url" ]; then
             echo "Failed to read api_gateway_url from terraform output" >&2
             exit 1
@@ -180,17 +180,14 @@ jobs:
           api_url="${api_url%/}"
           printf "api_url=%s\n" "$api_url" >> "$GITHUB_OUTPUT"
 
-          ui_bucket="$(terraform output -raw ui_bucket_name 2>/dev/null \
-            | sed -e 's/\r//g' -e '/^\[command\]/d' -e '/^::/d' | tail -n1)"
+          ui_bucket="$(printf '%s' "$tfout" | jq -r '.ui_bucket_name.value // empty')"
           if [ -z "$ui_bucket" ]; then
             echo "Failed to read ui_bucket_name from terraform output" >&2
             exit 1
           fi
           printf "ui_bucket=%s\n" "$ui_bucket" >> "$GITHUB_OUTPUT"
 
-          ui_url="$(terraform output -raw ui_website_url 2>/dev/null \
-            | sed -e 's/\r//g' -e '/^\[command\]/d' -e '/^::/d' \
-            | grep -Eo 'https?://[^ ]+' | tail -n1)"
+          ui_url="$(printf '%s' "$tfout" | jq -r '.ui_website_url.value // empty')"
           if [ -z "$ui_url" ]; then
             echo "Failed to read ui_website_url from terraform output" >&2
             exit 1
