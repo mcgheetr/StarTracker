@@ -25,5 +25,5 @@ output "ui_bucket_name" {
 
 output "ui_website_url" {
   description = "S3 static website URL for the UI"
-  value       = "http://${aws_s3_bucket.ui_site.website_endpoint}"
+  value       = "http://${aws_s3_bucket_website_configuration.ui_site.website_endpoint}"
 }
