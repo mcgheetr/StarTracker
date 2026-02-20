@@ -71,6 +71,12 @@ jobs:
             -var="image_tag=latest" \
             -var="api_key=${{ secrets.API_KEY }}" \
             -auto-approve
+
+      - name: Verify teardown leftovers
+        if: always() && github.event_name != 'push'
+        shell: pwsh
+        run: |
+          ./scripts/destroy-verify.ps1 -Region us-east-1 -ClusterName startracker-eks-dev -NameFilter startracker
       
       - name: Notification
         if: always()
@@ -81,4 +87,5 @@ jobs:
           else
             echo "## Infrastructure Destroyed" >> $GITHUB_STEP_SUMMARY
             echo "Scheduled or manual destruction completed." >> $GITHUB_STEP_SUMMARY
+            echo "Teardown verification ran via scripts/destroy-verify.ps1." >> $GITHUB_STEP_SUMMARY
           fi
