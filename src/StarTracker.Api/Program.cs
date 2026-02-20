@@ -59,6 +59,13 @@ app.Use(async (context, next) =>
 {
     if (context.Request.Path.StartsWithSegments("/api"))
     {
+        // Allow CORS preflight through without API key enforcement.
+        if (HttpMethods.IsOptions(context.Request.Method))
+        {
+            await next();
+            return;
+        }
+
         var key = context.Request.Headers[Constants.ApiKeyHeader].FirstOrDefault();
 
             if (string.IsNullOrWhiteSpace(key))
