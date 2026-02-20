@@ -43,11 +43,18 @@ jobs:
         run: |
           # `terraform output` only includes declared outputs, not resource tags.
           # Check state JSON directly for the default AWS tag Purpose=portfolio.
-          if terraform show -json | grep -Eq '"Purpose"[[:space:]]*:[[:space:]]*"portfolio"'; then
-            echo "✓ Portfolio tag verified - safe to destroy"
+          # If state is empty/missing, treat as safe (nothing to destroy).
+          if terraform show -json > tfshow.json 2>/dev/null; then
+            if grep -Eq '"resources"[[:space:]]*:[[:space:]]*\[[[:space:]]*\]' tfshow.json; then
+              echo "✓ Terraform state is empty - safe to continue"
+            elif grep -Eq '"Purpose"[[:space:]]*:[[:space:]]*"portfolio"' tfshow.json; then
+              echo "✓ Portfolio tag verified - safe to destroy"
+            else
+              echo "✗ Non-empty state without Purpose=portfolio tag - aborting destroy"
+              exit 1
+            fi
           else
-            echo "✗ Purpose=portfolio tag not found in Terraform state - aborting destroy"
-            exit 1
+            echo "✓ No Terraform state found - safe to continue"
           fi
 
       - name: Terraform Destroy Plan (safe preview only)
