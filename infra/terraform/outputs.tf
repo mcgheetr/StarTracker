@@ -17,3 +17,13 @@ output "lambda_function_name" {
   description = "Lambda function name"
   value       = aws_lambda_function.startracker.function_name
 }
+
+output "ui_bucket_name" {
+  description = "S3 bucket name for static UI hosting"
+  value       = aws_s3_bucket.ui_site.id
+}
+
+output "ui_website_url" {
+  description = "S3 static website URL for the UI"
+  value       = "http://${aws_s3_bucket.ui_site.website_endpoint}"
+}

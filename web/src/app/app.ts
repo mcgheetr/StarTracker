@@ -22,7 +22,7 @@ export class App implements AfterViewInit {
   lon = '';
   atLocal = '';
   apiKey = '';
-  baseUrl = '/api';
+  baseUrl = this.getConfiguredBaseUrl();
   loading = false;
   error = '';
   result: PositionResult | null = null;
@@ -154,6 +154,12 @@ export class App implements AfterViewInit {
 
   get lonNumber(): number {
     return this.parseNumber(this.lon) ?? -93.0;
+  }
+
+  private getConfiguredBaseUrl(): string {
+    const configured = (globalThis as { __STARTRACKER_CONFIG__?: { apiBaseUrl?: string } })
+      .__STARTRACKER_CONFIG__?.apiBaseUrl;
+    return configured && configured.trim() ? configured.trim() : '/api';
   }
 
 }

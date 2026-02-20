@@ -52,7 +52,7 @@ jobs:
           elif [ ! -s tfstate.list ]; then
             echo "✓ Terraform state has no managed resources - safe to continue"
           else
-            ALLOWED='^((module\.[^.]+\.)*)(aws_apigatewayv2_api\.startracker|aws_apigatewayv2_stage\.default|aws_cloudwatch_log_group\.api_gateway|aws_ecr_repository\.startracker|aws_ecr_lifecycle_policy\.startracker|aws_lambda_function\.startracker|aws_iam_role\.lambda|aws_iam_role_policy_attachment\.lambda_basic|aws_iam_role_policy\.lambda_dynamodb|aws_apigatewayv2_integration\.lambda|aws_apigatewayv2_route\.lambda_default|aws_lambda_permission\.api_gateway|aws_dynamodb_table\.observations)$'
+            ALLOWED='^((module\.[^.]+\.)*)(aws_apigatewayv2_api\.startracker|aws_apigatewayv2_stage\.default|aws_cloudwatch_log_group\.api_gateway|aws_ecr_repository\.startracker|aws_ecr_lifecycle_policy\.startracker|aws_lambda_function\.startracker|aws_iam_role\.lambda|aws_iam_role_policy_attachment\.lambda_basic|aws_iam_role_policy\.lambda_dynamodb|aws_apigatewayv2_integration\.lambda|aws_apigatewayv2_route\.lambda_default|aws_lambda_permission\.api_gateway|aws_dynamodb_table\.observations|aws_s3_bucket\.ui_site|aws_s3_bucket_website_configuration\.ui_site|aws_s3_bucket_ownership_controls\.ui_site|aws_s3_bucket_public_access_block\.ui_site|aws_s3_bucket_acl\.ui_site|aws_s3_bucket_policy\.ui_site_public_read)$'
             if grep -Ev "$ALLOWED" tfstate.list > unexpected.list; then
               echo "✗ Found unexpected Terraform state addresses; aborting destroy"
               cat unexpected.list

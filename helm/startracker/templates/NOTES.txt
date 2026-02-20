@@ -1,0 +1,16 @@
+StarTracker has been installed.
+
+If ingress is enabled, your app is exposed at:
+  http://{{ .Values.ingress.host }}
+
+API path:
+  http://{{ .Values.ingress.host }}/api/v1/health
+
+If your API requires an API key, set:
+  api.secret.existingSecretName
+or enable:
+  externalSecrets.enabled=true
+to create/sync that secret from AWS Secrets Manager.
+
+Expected key in Kubernetes secret:
+  {{ .Values.api.secret.key }}

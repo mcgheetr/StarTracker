@@ -48,7 +48,11 @@ app.UseSwagger(options =>
     options.OpenApiVersion = OpenApiSpecVersion.OpenApi3_0;
 });
 
-app.UseSwaggerUI();
+app.UseSwaggerUI(options =>
+{
+    // Use a relative endpoint so Swagger works behind proxies/path prefixes.
+    options.SwaggerEndpoint("./v1/swagger.json", "StarTracker API v1");
+});
 
 // API key middleware - validates X-API-Key header for /api routes
 app.Use(async (context, next) =>

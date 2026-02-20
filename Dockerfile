@@ -9,7 +9,7 @@ COPY src/StarTracker.Core/StarTracker.Core.csproj src/StarTracker.Core/
 COPY src/StarTracker.Infrastructure/StarTracker.Infrastructure.csproj src/StarTracker.Infrastructure/
 
 # Restore dependencies
-RUN dotnet restore
+RUN dotnet restore src/StarTracker.Api/StarTracker.Api.csproj
 
 # Copy source code
 COPY src/ src/
@@ -22,18 +22,11 @@ RUN dotnet publish -c Release -o /app/publish --no-restore
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
 
-# Create non-root user for security
-RUN addgroup --system --gid 1000 appuser && \
-    adduser --system --uid 1000 --ingroup appuser appuser
-
 # Copy published app
 COPY --from=build /app/publish .
 
-# Change ownership to non-root user
-RUN chown -R appuser:appuser /app
-
-# Switch to non-root user
-USER appuser
+# Switch to built-in non-root user in .NET runtime images
+USER app
 
 # Expose port
 EXPOSE 8080

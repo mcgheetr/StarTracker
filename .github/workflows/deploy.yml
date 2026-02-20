@@ -10,6 +10,7 @@ on:
       - '.github/workflows/deploy.yml'
       - 'infra/terraform/**'
       - 'src/**'
+      - 'web/**'
       - 'Dockerfile.lambda'
   workflow_dispatch:
     inputs:
@@ -178,6 +179,46 @@ jobs:
           fi
           api_url="${api_url%/}"
           printf "api_url=%s\n" "$api_url" >> "$GITHUB_OUTPUT"
+
+          ui_bucket="$(terraform output -raw ui_bucket_name 2>/dev/null \
+            | sed -e 's/\r//g' -e '/^\[command\]/d' -e '/^::/d' | tail -n1)"
+          if [ -z "$ui_bucket" ]; then
+            echo "Failed to read ui_bucket_name from terraform output" >&2
+            exit 1
+          fi
+          printf "ui_bucket=%s\n" "$ui_bucket" >> "$GITHUB_OUTPUT"
+
+          ui_url="$(terraform output -raw ui_website_url 2>/dev/null \
+            | sed -e 's/\r//g' -e '/^\[command\]/d' -e '/^::/d' \
+            | grep -Eo 'https?://[^ ]+' | tail -n1)"
+          if [ -z "$ui_url" ]; then
+            echo "Failed to read ui_website_url from terraform output" >&2
+            exit 1
+          fi
+          ui_url="${ui_url%/}"
+          printf "ui_url=%s\n" "$ui_url" >> "$GITHUB_OUTPUT"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Build web UI
+        working-directory: ./web
+        run: |
+          cat > public/config.js <<EOF
+          window.__STARTRACKER_CONFIG__ = {
+            apiBaseUrl: "${{ steps.output.outputs.api_url }}/api"
+          };
+          EOF
+          npm ci
+          npm run build
+
+      - name: Deploy web UI to S3 website bucket
+        run: |
+          aws s3 sync ./web/dist/web/browser "s3://${{ steps.output.outputs.ui_bucket }}" --delete
       
       - name: Deployment summary
         run: |
@@ -185,4 +226,5 @@ jobs:
           echo "- **Environment**: ${{ env.DEPLOY_ENV }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Region**: ${{ env.AWS_REGION }}" >> $GITHUB_STEP_SUMMARY
           echo "- **API URL**: ${{ steps.output.outputs.api_url }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **UI URL**: ${{ steps.output.outputs.ui_url }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Image**: startracker-${{ env.DEPLOY_ENV }}:latest" >> $GITHUB_STEP_SUMMARY

@@ -1,0 +1,35 @@
+{
+  "yaml.customTags": [
+    "!And scalar",
+    "!And sequence",
+    "!If scalar",
+    "!If sequence",
+    "!Not scalar",
+    "!Not sequence",
+    "!Equals scalar",
+    "!Equals sequence",
+    "!Or scalar",
+    "!Or sequence",
+    "!FindInMap scalar",
+    "!FindInMap sequence",
+    "!Base64 scalar",
+    "!Join scalar",
+    "!Join sequence",
+    "!Cidr scalar",
+    "!Ref scalar",
+    "!Sub scalar",
+    "!Sub sequence",
+    "!GetAtt scalar",
+    "!GetAZs scalar",
+    "!ImportValue scalar",
+    "!ImportValue sequence",
+    "!Select scalar",
+    "!Select sequence",
+    "!Split scalar",
+    "!Split sequence"
+  ],
+  "files.associations": {
+    "**/helm/**/templates/*.yaml": "helm",
+    "**/helm/**/templates/*.tpl": "helm"
+  }
+}
