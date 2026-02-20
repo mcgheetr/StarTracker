@@ -150,6 +150,34 @@ if ($repos.repositories) {
 }
 Write-Check -Title "ECR repos reviewed" -Ok ($matchedRepos.Count -eq 0) -Details ($(if ($matchedRepos.Count -gt 0) { "Repos still present: " + (($matchedRepos | ForEach-Object { $_.repositoryName }) -join ", ") } else { "No matching repos found." }))
 
+# 10) S3 buckets and objects
+$buckets = Query-Json "aws s3api list-buckets --output json"
+$matchedBuckets = @()
+if ($buckets.Buckets) {
+    $matchedBuckets = $buckets.Buckets | Where-Object {
+        $_.Name -like "*$NameFilter*" -or $_.Name -like "startracker-ui-*"
+    }
+}
+
+$nonEmptyBuckets = @()
+foreach ($bucket in $matchedBuckets) {
+    $bucketName = $bucket.Name
+    try {
+        $objectsJson = aws s3api list-objects-v2 --bucket $bucketName --max-items 1 --output json 2>$null
+        if (-not [string]::IsNullOrWhiteSpace($objectsJson)) {
+            $objects = $objectsJson | ConvertFrom-Json
+            if ($objects.KeyCount -gt 0) {
+                $nonEmptyBuckets += $bucketName
+            }
+        }
+    } catch {
+        # Keep bucket in matched list even if object listing fails.
+    }
+}
+
+Write-Check -Title "S3 buckets removed" -Ok ($matchedBuckets.Count -eq 0) -Details ($(if ($matchedBuckets.Count -gt 0) { "Buckets still present: " + (($matchedBuckets | ForEach-Object { $_.Name }) -join ", ") } else { "No matching S3 buckets found." }))
+Write-Check -Title "S3 buckets empty" -Ok ($nonEmptyBuckets.Count -eq 0) -Details ($(if ($nonEmptyBuckets.Count -gt 0) { "Non-empty buckets: " + ($nonEmptyBuckets -join ", ") } else { "No non-empty matching buckets." }))
+
 Write-Host ""
 Write-Host "Destroy verification complete."
 Write-Host "Tip: adjust -NameFilter to avoid false positives."
