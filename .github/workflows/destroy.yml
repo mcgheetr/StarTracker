@@ -43,12 +43,16 @@ jobs:
         run: |
           # Deterministic safety check:
           # Allow destroy only when state is empty or contains only known StarTracker addresses.
-          if ! terraform state list > tfstate.list 2>/dev/null; then
+          RAW_STATE="$(terraform state list 2>/dev/null || true)"
+          # Filter out wrapper/debug lines and keep only Terraform addresses.
+          printf '%s\n' "$RAW_STATE" | grep -E '^(module\.[^.]+\.)*aws_[a-z0-9_]+\.[A-Za-z0-9_-]+$' > tfstate.list || true
+
+          if [ -z "$RAW_STATE" ]; then
             echo "✓ No Terraform state found - safe to continue"
           elif [ ! -s tfstate.list ]; then
-            echo "✓ Terraform state is empty - safe to continue"
+            echo "✓ Terraform state has no managed resources - safe to continue"
           else
-            ALLOWED='^(aws_apigatewayv2_api\.startracker|aws_apigatewayv2_stage\.default|aws_cloudwatch_log_group\.api_gateway|aws_ecr_repository\.startracker|aws_ecr_lifecycle_policy\.startracker|aws_lambda_function\.startracker|aws_iam_role\.lambda|aws_iam_role_policy_attachment\.lambda_basic|aws_iam_role_policy\.lambda_dynamodb|aws_apigatewayv2_integration\.lambda|aws_apigatewayv2_route\.lambda_default|aws_lambda_permission\.api_gateway|aws_dynamodb_table\.observations)$'
+            ALLOWED='^((module\.[^.]+\.)*)(aws_apigatewayv2_api\.startracker|aws_apigatewayv2_stage\.default|aws_cloudwatch_log_group\.api_gateway|aws_ecr_repository\.startracker|aws_ecr_lifecycle_policy\.startracker|aws_lambda_function\.startracker|aws_iam_role\.lambda|aws_iam_role_policy_attachment\.lambda_basic|aws_iam_role_policy\.lambda_dynamodb|aws_apigatewayv2_integration\.lambda|aws_apigatewayv2_route\.lambda_default|aws_lambda_permission\.api_gateway|aws_dynamodb_table\.observations)$'
             if grep -Ev "$ALLOWED" tfstate.list > unexpected.list; then
               echo "✗ Found unexpected Terraform state addresses; aborting destroy"
               cat unexpected.list
