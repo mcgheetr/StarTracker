@@ -1,4 +1,4 @@
-# StarTracker
+# StarTracker  
 
 [![CI](https://github.com/mcgheetr/StarTracker/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/mcgheetr/StarTracker/actions/workflows/ci.yml)
 [![Deploy](https://github.com/mcgheetr/StarTracker/actions/workflows/deploy.yml/badge.svg?branch=main)](https://github.com/mcgheetr/StarTracker/actions/workflows/deploy.yml)
@@ -219,3 +219,6 @@ MIT licensed. You’re free to use, modify, and distribute this project with att
 ## **AI Guardrails**
 
 AI usage rules and safety constraints are documented in `docs/ai-guardrails.md`.
+
+## Built By
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Todd%20McGhee-0A66C2?style=flat&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/tmcg33)
