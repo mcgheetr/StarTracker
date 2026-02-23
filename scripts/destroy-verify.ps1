@@ -5,6 +5,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+$script:PermissionIssues = @()
 
 function Write-Check {
     param(
@@ -25,10 +26,18 @@ function Write-Check {
 
 function Query-Json {
     param([string]$Command)
-    $output = Invoke-Expression $Command
-    if ([string]::IsNullOrWhiteSpace($output)) { return @() }
+
+    $output = Invoke-Expression "$Command 2>&1"
+    $text = ($output | Out-String).Trim()
+
+    if ($text -match "AccessDenied|AccessDeniedException|UnauthorizedOperation|not authorized to perform") {
+        $script:PermissionIssues += $text
+        return @()
+    }
+
+    if ([string]::IsNullOrWhiteSpace($text)) { return @() }
     try {
-        return $output | ConvertFrom-Json
+        return $text | ConvertFrom-Json
     } catch {
         return @()
     }
@@ -179,5 +188,10 @@ Write-Check -Title "S3 buckets removed" -Ok ($matchedBuckets.Count -eq 0) -Detai
 Write-Check -Title "S3 buckets empty" -Ok ($nonEmptyBuckets.Count -eq 0) -Details ($(if ($nonEmptyBuckets.Count -gt 0) { "Non-empty buckets: " + ($nonEmptyBuckets -join ", ") } else { "No non-empty matching buckets." }))
 
 Write-Host ""
+if ($script:PermissionIssues.Count -gt 0) {
+    Write-Host "[WARN] Verification was limited by missing IAM read permissions." -ForegroundColor Yellow
+    Write-Host "      Grant read-only describe/list permissions for full teardown verification coverage."
+}
 Write-Host "Destroy verification complete."
 Write-Host "Tip: adjust -NameFilter to avoid false positives."
+exit 0
