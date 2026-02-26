@@ -65,6 +65,11 @@ curl -X POST \
 
 See `DESIGN.md` for the full system design and rationale.
 
+- Context diagram source: `docs/architecture/context.mmd`
+- Rendered diagram: `docs/architecture/context.svg`
+
+![StarTracker context diagram](docs/architecture/context.svg)
+
 ## **Security & Privacy**
 
 - Coordinates are encrypted before storage.
