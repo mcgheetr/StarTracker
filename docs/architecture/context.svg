@@ -3,10 +3,10 @@
   <desc id="desc">A clean context diagram showing the StarTracker user, system boundary, AWS dependencies, API key authentication, and encrypted coordinate persistence.</desc>
 
   <defs>
-    <marker id="arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto" markerUnits="strokeWidth">
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="4" orient="auto" markerUnits="strokeWidth">
       <path d="M0,0 L10,4 L0,8 z" fill="#334155" />
     </marker>
-    <marker id="arrowDashed" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto" markerUnits="strokeWidth">
+    <marker id="arrowDashed" markerWidth="10" markerHeight="10" refX="9" refY="4" orient="auto" markerUnits="strokeWidth">
       <path d="M0,0 L10,4 L0,8 z" fill="#64748b" />
     </marker>
     <style>
@@ -34,48 +34,48 @@
   <text x="185" y="368" text-anchor="middle" class="subtext">(browser/UI consumer)</text>
 
   <!-- System boundary -->
-  <rect x="360" y="130" width="790" height="580" rx="18" class="boundary" />
+  <rect x="360" y="130" width="880" height="580" rx="18" class="boundary" />
   <text x="390" y="170" class="text">StarTracker system boundary</text>
 
   <!-- Services -->
-  <rect x="430" y="230" width="270" height="105" rx="12" class="service" />
+  <rect x="410" y="230" width="270" height="105" rx="12" class="service" />
   <text x="565" y="268" text-anchor="middle" class="text">StarTracker UI</text>
   <text x="565" y="296" text-anchor="middle" class="subtext">S3 static hosting</text>
 
-  <rect x="800" y="230" width="300" height="105" rx="12" class="service" />
-  <text x="950" y="268" text-anchor="middle" class="text">AWS API Gateway HTTP API</text>
-  <text x="950" y="296" text-anchor="middle" class="subtext">StarTracker API entrypoint</text>
+  <rect x="850" y="230" width="340" height="105" rx="12" class="service" />
+  <text x="1000" y="268" text-anchor="middle" class="text">AWS API Gateway HTTP API</text>
+  <text x="1000" y="296" text-anchor="middle" class="subtext">StarTracker API entrypoint</text>
 
-  <rect x="800" y="400" width="240" height="105" rx="12" class="service" />
-  <text x="920" y="438" text-anchor="middle" class="text">AWS Lambda</text>
-  <text x="920" y="466" text-anchor="middle" class="subtext">Application compute</text>
+  <rect x="490" y="400" width="240" height="95" rx="12" class="service" />
+  <text x="610" y="428" text-anchor="middle" class="text">AWS Lambda</text>
+  <text x="610" y="458" text-anchor="middle" class="subtext">Application compute</text>
 
-  <rect x="980" y="400" width="170" height="105" rx="12" class="service" />
+  <rect x="930" y="400" width="240" height="95" rx="12" class="service" />
   <text x="1065" y="438" text-anchor="middle" class="text">DynamoDB</text>
   <text x="1065" y="466" text-anchor="middle" class="subtext">Persistence</text>
 
   <!-- Notes -->
-  <rect x="700" y="560" width="270" height="115" rx="12" class="note" />
-  <text x="835" y="600" text-anchor="middle" class="subtext">Authentication touchpoint:</text>
-  <text x="835" y="628" text-anchor="middle" class="subtext">X-API-Key required for /api requests</text>
+  <rect x="490" y="560" width="320" height="115" rx="12" class="note" />
+  <text x="650" y="600" text-anchor="middle" class="subtext">Authentication touchpoint:</text>
+  <text x="650" y="628" text-anchor="middle" class="subtext">X-API-Key required for /api requests</text>
 
-  <rect x="985" y="560" width="165" height="115" rx="12" class="note" />
+  <rect x="945" y="560" width="240" height="115" rx="12" class="note" />
   <text x="1067" y="600" text-anchor="middle" class="subtext">Observation coordinates</text>
   <text x="1067" y="628" text-anchor="middle" class="subtext">encrypted before save</text>
 
   <!-- Connections -->
-  <path d="M310 360 C350 360, 385 295, 430 282" class="edge" />
-  <text x="350" y="316" class="edge-label">Uses UI</text>
+  <path d="M310 335 C320 340, 375 295, 408 282" class="edge" />
+  <text x="365" y="346" class="edge-label">Uses UI</text>
 
-  <path d="M700 282 L800 282" class="edge" />
-  <text x="750" y="260" text-anchor="middle" class="edge-label">Calls API with X-API-Key</text>
+  <path d="M680 272 L848 272" class="edge" />
+  <text x="760" y="250" text-anchor="middle" class="edge-label">Calls API with X-API-Key</text>
 
-  <path d="M950 335 L920 400" class="edge" />
-  <text x="900" y="366" text-anchor="middle" class="edge-label">Invokes</text>
+  <path d="M855 334 L725 400" class="edge" />
+  <text x="800" y="466" text-anchor="middle" class="edge-label">Invokes</text>
 
-  <path d="M1040 452 L980 452" class="edge" />
-  <text x="1010" y="384" text-anchor="middle" class="edge-label">Reads/writes observations</text>
+  <path d="M730 452 L928 452" class="edge" />
+  <text x="740" y="350" text-anchor="middle" class="edge-label">Reads/writes observations</text>
 
-  <path d="M930 335 C930 420, 890 500, 850 560" class="edge-dashed" />
-  <path d="M1065 505 C1065 525, 1068 542, 1067 560" class="edge-dashed" />
+  <path d="M945 345 C955 325, 845 500, 810 557" class="edge-dashed" />
+  <path d="M1065 505 C1065 525, 1067 542, 1067 557" class="edge-dashed" />
 </svg>
