@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="700" viewBox="0 0 1200 700" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760" role="img" aria-labelledby="title desc">
   <title id="title">StarTracker system context diagram</title>
-  <desc id="desc">Context view showing user, StarTracker boundary, AWS dependencies, API key authentication, and encrypted coordinate persistence.</desc>
+  <desc id="desc">A clean context diagram showing the StarTracker user, system boundary, AWS dependencies, API key authentication, and encrypted coordinate persistence.</desc>
 
   <defs>
     <marker id="arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto" markerUnits="strokeWidth">
@@ -10,68 +10,72 @@
       <path d="M0,0 L10,4 L0,8 z" fill="#64748b" />
     </marker>
     <style>
-      .title { font: 700 26px Arial, sans-serif; fill: #0f172a; }
-      .box { fill: #fff7ed; stroke: #fb923c; stroke-width: 2; rx: 12; }
-      .sys { fill: #eef6ff; stroke: #3b82f6; stroke-width: 3; rx: 16; }
-      .svc { fill: #ffffff; stroke: #0f172a; stroke-width: 2; rx: 10; }
-      .note { fill: #f8fafc; stroke: #64748b; stroke-width: 2; stroke-dasharray: 7 5; rx: 10; }
-      .label { font: 600 17px Arial, sans-serif; fill: #0f172a; }
-      .small { font: 500 14px Arial, sans-serif; fill: #334155; }
-      .edge { stroke: #334155; stroke-width: 2.5; fill: none; marker-end: url(#arrow); }
+      .title { font: 700 30px Arial, sans-serif; fill: #0f172a; }
+      .subtitle { font: 500 15px Arial, sans-serif; fill: #334155; }
+      .actor { fill: #fff7ed; stroke: #ea580c; stroke-width: 2.2; }
+      .boundary { fill: #eef6ff; stroke: #3b82f6; stroke-width: 3; }
+      .service { fill: #ffffff; stroke: #1f2937; stroke-width: 2.2; }
+      .note { fill: #f8fafc; stroke: #64748b; stroke-width: 2; stroke-dasharray: 8 6; }
+      .heading { font: 700 34px Arial, sans-serif; fill: #111827; }
+      .text { font: 600 17px Arial, sans-serif; fill: #111827; }
+      .subtext { font: 500 14px Arial, sans-serif; fill: #334155; }
+      .edge { stroke: #334155; stroke-width: 2.6; fill: none; marker-end: url(#arrow); }
       .edge-dashed { stroke: #64748b; stroke-width: 2.2; fill: none; stroke-dasharray: 7 6; marker-end: url(#arrowDashed); }
+      .edge-label { font: 500 14px Arial, sans-serif; fill: #334155; }
     </style>
   </defs>
 
-  <text x="60" y="50" class="title">StarTracker Context Diagram</text>
+  <text x="60" y="56" class="title">StarTracker Context Diagram</text>
+  <text x="60" y="82" class="subtitle">Primary actor, system boundary, AWS dependencies, authentication, and data sensitivity.</text>
 
   <!-- Primary actor -->
-  <rect x="60" y="250" width="230" height="120" class="box" />
-  <text x="175" y="290" text-anchor="middle" class="label">StarTracker user</text>
-  <text x="175" y="318" text-anchor="middle" class="small">(browser/UI consumer)</text>
+  <rect x="60" y="300" width="250" height="120" rx="14" class="actor" />
+  <text x="185" y="340" text-anchor="middle" class="text">StarTracker user</text>
+  <text x="185" y="368" text-anchor="middle" class="subtext">(browser/UI consumer)</text>
 
   <!-- System boundary -->
-  <rect x="340" y="110" width="800" height="500" class="sys" />
-  <text x="360" y="145" class="label">StarTracker system boundary</text>
+  <rect x="360" y="130" width="790" height="580" rx="18" class="boundary" />
+  <text x="390" y="170" class="text">StarTracker system boundary</text>
 
-  <!-- Services inside boundary -->
-  <rect x="390" y="210" width="220" height="100" class="svc" />
-  <text x="500" y="245" text-anchor="middle" class="label">StarTracker UI</text>
-  <text x="500" y="272" text-anchor="middle" class="small">S3 static hosting</text>
+  <!-- Services -->
+  <rect x="430" y="230" width="270" height="105" rx="12" class="service" />
+  <text x="565" y="268" text-anchor="middle" class="text">StarTracker UI</text>
+  <text x="565" y="296" text-anchor="middle" class="subtext">S3 static hosting</text>
 
-  <rect x="680" y="210" width="280" height="100" class="svc" />
-  <text x="820" y="245" text-anchor="middle" class="label">AWS API Gateway HTTP API</text>
-  <text x="820" y="272" text-anchor="middle" class="small">StarTracker API entrypoint</text>
+  <rect x="800" y="230" width="300" height="105" rx="12" class="service" />
+  <text x="950" y="268" text-anchor="middle" class="text">AWS API Gateway HTTP API</text>
+  <text x="950" y="296" text-anchor="middle" class="subtext">StarTracker API entrypoint</text>
 
-  <rect x="680" y="360" width="220" height="100" class="svc" />
-  <text x="790" y="395" text-anchor="middle" class="label">AWS Lambda</text>
-  <text x="790" y="422" text-anchor="middle" class="small">Application compute</text>
+  <rect x="800" y="400" width="240" height="105" rx="12" class="service" />
+  <text x="920" y="438" text-anchor="middle" class="text">AWS Lambda</text>
+  <text x="920" y="466" text-anchor="middle" class="subtext">Application compute</text>
 
-  <rect x="960" y="360" width="150" height="100" class="svc" />
-  <text x="1035" y="398" text-anchor="middle" class="label">DynamoDB</text>
-  <text x="1035" y="425" text-anchor="middle" class="small">Persistence</text>
+  <rect x="980" y="400" width="170" height="105" rx="12" class="service" />
+  <text x="1065" y="438" text-anchor="middle" class="text">DynamoDB</text>
+  <text x="1065" y="466" text-anchor="middle" class="subtext">Persistence</text>
 
   <!-- Notes -->
-  <rect x="640" y="500" width="290" height="85" class="note" />
-  <text x="785" y="532" text-anchor="middle" class="small">Authentication touchpoint:</text>
-  <text x="785" y="555" text-anchor="middle" class="small">X-API-Key required for /api requests</text>
+  <rect x="700" y="560" width="270" height="115" rx="12" class="note" />
+  <text x="835" y="600" text-anchor="middle" class="subtext">Authentication touchpoint:</text>
+  <text x="835" y="628" text-anchor="middle" class="subtext">X-API-Key required for /api requests</text>
 
-  <rect x="940" y="500" width="180" height="85" class="note" />
-  <text x="1030" y="532" text-anchor="middle" class="small">Observation coordinates</text>
-  <text x="1030" y="555" text-anchor="middle" class="small">encrypted before save</text>
+  <rect x="985" y="560" width="165" height="115" rx="12" class="note" />
+  <text x="1067" y="600" text-anchor="middle" class="subtext">Observation coordinates</text>
+  <text x="1067" y="628" text-anchor="middle" class="subtext">encrypted before save</text>
 
-  <!-- Edges -->
-  <path d="M290 310 C330 310, 360 260, 390 260" class="edge" />
-  <text x="342" y="248" class="small">Uses UI</text>
+  <!-- Connections -->
+  <path d="M310 360 C350 360, 385 295, 430 282" class="edge" />
+  <text x="350" y="316" class="edge-label">Uses UI</text>
 
-  <path d="M610 260 L680 260" class="edge" />
-  <text x="645" y="225" text-anchor="middle" class="small">Calls API with X-API-Key</text>
+  <path d="M700 282 L800 282" class="edge" />
+  <text x="750" y="260" text-anchor="middle" class="edge-label">Calls API with X-API-Key</text>
 
-  <path d="M820 310 L790 360" class="edge" />
-  <text x="736" y="346" class="small">Invokes</text>
+  <path d="M950 335 L920 400" class="edge" />
+  <text x="900" y="366" text-anchor="middle" class="edge-label">Invokes</text>
 
-  <path d="M900 410 L960 410" class="edge" />
-  <text x="930" y="388" text-anchor="middle" class="small">Reads/writes observations</text>
+  <path d="M1040 452 L980 452" class="edge" />
+  <text x="1010" y="384" text-anchor="middle" class="edge-label">Reads/writes observations</text>
 
-  <path d="M840 310 C845 370, 820 440, 800 500" class="edge-dashed" />
-  <path d="M1020 460 C1012 475, 1002 488, 990 500" class="edge-dashed" />
+  <path d="M930 335 C930 420, 890 500, 850 560" class="edge-dashed" />
+  <path d="M1065 505 C1065 525, 1068 542, 1067 560" class="edge-dashed" />
 </svg>
