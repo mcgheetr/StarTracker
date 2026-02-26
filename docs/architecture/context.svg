@@ -61,17 +61,17 @@
 
   <!-- Edges -->
   <path d="M290 310 C330 310, 360 260, 390 260" class="edge" />
-  <text x="350" y="275" class="small">Uses UI</text>
+  <text x="342" y="248" class="small">Uses UI</text>
 
   <path d="M610 260 L680 260" class="edge" />
-  <text x="645" y="248" text-anchor="middle" class="small">Calls API with X-API-Key</text>
+  <text x="645" y="225" text-anchor="middle" class="small">Calls API with X-API-Key</text>
 
   <path d="M820 310 L790 360" class="edge" />
-  <text x="770" y="337" class="small">Invokes</text>
+  <text x="736" y="346" class="small">Invokes</text>
 
   <path d="M900 410 L960 410" class="edge" />
-  <text x="930" y="398" text-anchor="middle" class="small">Reads/writes observations</text>
+  <text x="930" y="388" text-anchor="middle" class="small">Reads/writes observations</text>
 
-  <path d="M820 310 L790 500" class="edge-dashed" />
-  <path d="M1035 460 L1035 500" class="edge-dashed" />
+  <path d="M840 310 C845 370, 820 440, 800 500" class="edge-dashed" />
+  <path d="M1020 460 C1012 475, 1002 488, 990 500" class="edge-dashed" />
 </svg>
