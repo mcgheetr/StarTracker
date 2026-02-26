@@ -1,0 +1,28 @@
+flowchart LR
+    user["StarTracker user\n(browser/UI consumer)"]
+
+    subgraph st["StarTracker system boundary"]
+        ui["StarTracker UI\n(S3 static hosting)"]
+        api["StarTracker API\n(AWS API Gateway HTTP API)"]
+        fn["Application compute\n(AWS Lambda)"]
+        db[("Observation store\n(DynamoDB)")]
+    end
+
+    user -->|Uses UI| ui
+    ui -->|Calls API with X-API-Key| api
+    api -->|Invokes| fn
+    fn -->|Persists/retrieves observations| db
+
+    auth["Authentication touchpoint:\nX-API-Key required for /api requests"]
+    sensitive["Data sensitivity:\nObservation coordinate fields are encrypted\nbefore persistence"]
+
+    api -.-> auth
+    fn -.-> sensitive
+
+    classDef boundary fill:#eef6ff,stroke:#3b82f6,stroke-width:2px;
+    classDef external fill:#fff7ed,stroke:#fb923c,stroke-width:1px;
+    classDef note fill:#f8fafc,stroke:#64748b,stroke-dasharray: 5 5;
+
+    class st boundary;
+    class user external;
+    class auth,sensitive note;
