@@ -1,3 +1,5 @@
+using StarTracker.Core.DTOs;
+
 namespace StarTracker.Core.Interfaces;
 
 public interface IAstronomyCatalogService
