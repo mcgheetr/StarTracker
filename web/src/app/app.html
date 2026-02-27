@@ -12,7 +12,9 @@
       <div class="grid">
         <label class="field">
           <span>Target</span>
-          <input type="text" name="target" [(ngModel)]="target" (input)="onTargetInput($event)" placeholder="Polaris" required>
+          <select name="target" [(ngModel)]="target" required>
+            <option *ngFor="let option of suggestedTargets" [ngValue]="option">{{ option }}</option>
+          </select>
         </label>
 
         <label class="field">
@@ -62,6 +64,7 @@
       <span class="timestamp">UTC: {{ result.at }}</span>
     </div>
     <p class="guidance">{{ result.guidance }}</p>
+    <p class="canonical" *ngIf="canonicalizedTargetHint">{{ canonicalizedTargetHint }}</p>
 
     <div class="metrics">
       <div>

@@ -31,6 +31,9 @@ public static class ServiceCollectionExtensions
         // Guidance service
         services.AddSingleton<IGuidanceService, SimpleGuidanceService>();
 
+        // Astronomy catalog abstraction (MCP-backed adapter can replace this implementation)
+        services.AddSingleton<IAstronomyCatalogService, InMemoryAstronomyCatalogService>();
+
         // Configure repository (InMemory or DynamoDB)
         var repoType = config.GetValue<string>("Repository:Type") ?? "InMemory";
         if (repoType.Equals("DynamoDB", StringComparison.OrdinalIgnoreCase))

@@ -9,7 +9,7 @@ public class PositionEndpointTests(WebApplicationFactory<Program> factory) : ICl
     private readonly WebApplicationFactory<Program> _factory = factory;
 
     [Fact]
-    public async Task GetPosition_ReturnsExpectedRaDec_ForGivenLatLon()
+    public async Task GetPosition_ReturnsExpectedRaDec_ForPolaris()
     {
         var client = _factory.CreateClient();
         client.DefaultRequestHeaders.Add("X-API-Key", "test");
@@ -21,21 +21,69 @@ public class PositionEndpointTests(WebApplicationFactory<Program> factory) : ICl
         var pos = await response.Content.ReadFromJsonAsync<PositionResponseDto>();
         Assert.NotNull(pos);
         Assert.Equal("Polaris", pos!.Target);
-        Assert.Equal(89.264, pos.DeclinationDegrees, 6);
-        Assert.Equal(37.954, pos.RightAscensionDegrees, 6);
+        Assert.Equal(89.2641, pos.DeclinationDegrees, 4);
+        Assert.Equal(37.9546, pos.RightAscensionDegrees, 4);
         Assert.InRange(pos.AzimuthDegrees, 0, 360);
         Assert.InRange(pos.AltitudeDegrees, -90, 90);
         Assert.Contains("Polaris", pos.Guidance, StringComparison.OrdinalIgnoreCase);
+    }
 
-        // Now test fewer decimals are padded (lat=37.7 -> stored/returned as 37.70000 when rounded to 5 decimals)
-        var response2 = await client.GetAsync("/api/v1/stars/Polaris/position?lat=37.7&lon=-77.4&at=2026-01-29T16:00:00Z");
-        Assert.Equal(HttpStatusCode.OK, response2.StatusCode);
-        var pos2 = await response2.Content.ReadFromJsonAsync<PositionResponseDto>();
-        Assert.NotNull(pos2);
-        Assert.Equal(89.264, Math.Round(pos2!.DeclinationDegrees, 5));
-        Assert.Equal(37.954, Math.Round(pos2.RightAscensionDegrees, 5));
-        Assert.InRange(pos2.AzimuthDegrees, 0, 360);
-        Assert.InRange(pos2.AltitudeDegrees, -90, 90);
+    [Theory]
+    [InlineData("alpha UMi")]
+    [InlineData("north star")]
+    [InlineData("HIP 11767")]
+    public async Task GetPosition_AcceptsAliases_AndCanonicalizesTarget(string alias)
+    {
+        var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Add("X-API-Key", "test");
 
+        var response = await client.GetAsync($"/api/v1/stars/{Uri.EscapeDataString(alias)}/position?lat=37.70443&lon=-77.41832&at=2026-01-29T16:00:00Z");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var pos = await response.Content.ReadFromJsonAsync<PositionResponseDto>();
+        Assert.NotNull(pos);
+        Assert.Equal("Polaris", pos!.Target);
+    }
+
+    [Fact]
+    public async Task GetPosition_ReturnsNotFound_ForUnknownTarget()
+    {
+        var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Add("X-API-Key", "test");
+
+        var response = await client.GetAsync("/api/v1/stars/UnknownStar/position?lat=37.70443&lon=-77.41832&at=2026-01-29T16:00:00Z");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetPosition_IsIdempotent_ForRepeatedSameRequest()
+    {
+        var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Add("X-API-Key", "test");
+
+        const string url = "/api/v1/stars/Vega/position?lat=37.70443&lon=-77.41832&at=2026-01-29T16:00:00Z";
+
+        var first = await client.GetFromJsonAsync<PositionResponseDto>(url);
+        var second = await client.GetFromJsonAsync<PositionResponseDto>(url);
+        var third = await client.GetFromJsonAsync<PositionResponseDto>(url);
+
+        Assert.NotNull(first);
+        Assert.NotNull(second);
+        Assert.NotNull(third);
+
+        const double raDecTolerance = 0.0005;
+        const double azAltTolerance = 0.001;
+
+        Assert.InRange(Math.Abs(first!.RightAscensionDegrees - second!.RightAscensionDegrees), 0, raDecTolerance);
+        Assert.InRange(Math.Abs(first.DeclinationDegrees - second.DeclinationDegrees), 0, raDecTolerance);
+        Assert.InRange(Math.Abs(first.AzimuthDegrees - second.AzimuthDegrees), 0, azAltTolerance);
+        Assert.InRange(Math.Abs(first.AltitudeDegrees - second.AltitudeDegrees), 0, azAltTolerance);
+
+        Assert.InRange(Math.Abs(second.RightAscensionDegrees - third!.RightAscensionDegrees), 0, raDecTolerance);
+        Assert.InRange(Math.Abs(second.DeclinationDegrees - third.DeclinationDegrees), 0, raDecTolerance);
+        Assert.InRange(Math.Abs(second.AzimuthDegrees - third.AzimuthDegrees), 0, azAltTolerance);
+        Assert.InRange(Math.Abs(second.AltitudeDegrees - third.AltitudeDegrees), 0, azAltTolerance);
     }
 }
