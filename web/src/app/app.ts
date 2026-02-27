@@ -182,6 +182,16 @@ export class App implements AfterViewInit {
     return `Showing canonical target: ${this.result.target}`;
   }
 
+  get isTargetVisible(): boolean | null {
+    if (!this.result) return null;
+    return this.result.altitudeDegrees >= 0;
+  }
+
+  get visibilityLabel(): string {
+    if (this.isTargetVisible === null) return 'No target located yet';
+    return this.isTargetVisible ? 'Visible above horizon' : 'Below horizon at selected time';
+  }
+
 }
 
 type PositionResult = {
