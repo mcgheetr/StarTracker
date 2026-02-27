@@ -34,12 +34,14 @@ public static class StarsEndpoints
         return Results.Ok(new { status = "healthy" });
     }
 
-    private static IResult GetStarPosition(
+    private static async Task<IResult> GetStarPosition(
         string target,
         string? lat,
         string? lon,
         DateTimeOffset? at,
-        IGuidanceService guidanceSvc)
+        IGuidanceService guidanceSvc,
+        IAstronomyCatalogService astronomyCatalogService,
+        CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(target))
         {
@@ -96,13 +98,22 @@ public static class StarsEndpoints
 
         var timestamp = at ?? DateTimeOffset.UtcNow;
 
-        var (ra, dec) = AstronomyMapper.FromLatLon(nlat, nlon);
-        var (az, alt) = AstronomyMapper.ComputeAzAlt(nlat, nlon, ra, dec, timestamp);
+        var position = await astronomyCatalogService.GetPositionAsync(target, nlat, nlon, timestamp, ct);
+        if (position is null)
+        {
+            var problem = new Microsoft.AspNetCore.Mvc.ProblemDetails {
+                Status = 404,
+                Title = "Not Found",
+                Detail = $"target '{target}' was not found in the astronomy catalog"
+            };
+            var json = System.Text.Json.JsonSerializer.Serialize(problem);
+            return Results.Content(json, "application/problem+json", statusCode: 404);
+        }
 
         // Use guidance service for human-friendly text
-        var guidance = guidanceSvc.GenerateGuidance(az, alt, target);
+        var guidance = guidanceSvc.GenerateGuidance(position.AzimuthDegrees, position.AltitudeDegrees, position.CanonicalName);
 
-        var resp = new PositionResponseDto(target, ra, dec, az, alt, guidance, timestamp);
+        var resp = new PositionResponseDto(position.CanonicalName, position.RightAscensionDegrees, position.DeclinationDegrees, position.AzimuthDegrees, position.AltitudeDegrees, guidance, timestamp);
         var jsonResp = System.Text.Json.JsonSerializer.Serialize(resp);
         return Results.Content(jsonResp, "application/json", statusCode: 200);
     }

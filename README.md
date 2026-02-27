@@ -65,6 +65,10 @@ curl -X POST \
 
 See `DESIGN.md` for the full system design and rationale.
 
+MCP expansion planning document:
+
+- `docs/mcp-astronomy-integration-spec.md`
+
 - Context diagram source: `docs/architecture/context.mmd`
 - Rendered diagram: `docs/architecture/context.svg`
 
@@ -95,6 +99,14 @@ dotnet build -c Release
 ```bash
 dotnet test -c Release --logger "console;verbosity=normal"
 ```
+
+## **Codex Skill: Principal API Engineer**
+
+This repo includes a reusable Codex skill for backend/API implementation quality:
+
+- `skills/principal-api-engineer/SKILL.md`
+
+Use it when you want API work to follow principal-level engineering standards with DRY and clean coding techniques.
 
 **DynamoDB Local**
 

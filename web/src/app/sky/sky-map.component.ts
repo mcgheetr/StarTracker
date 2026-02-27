@@ -37,6 +37,10 @@ export class SkyMapComponent implements AfterViewInit, OnChanges {
   @Input({ required: true }) lon = 0;
   @Input({ required: true }) date!: Date;
   @Input() highlight = '';
+  @Input() targetRa: number | null = null;
+  @Input() targetDec: number | null = null;
+  @Input() targetAz: number | null = null;
+  @Input() targetAlt: number | null = null;
 
   private initialized = false;
 
@@ -48,7 +52,7 @@ export class SkyMapComponent implements AfterViewInit, OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (!this.initialized) return;
-    if (changes['lat'] || changes['lon'] || changes['date'] || changes['highlight']) {
+    if (changes['lat'] || changes['lon'] || changes['date'] || changes['highlight'] || changes['targetRa'] || changes['targetDec'] || changes['targetAz'] || changes['targetAlt']) {
       this.updateView();
     }
   }
@@ -68,6 +72,8 @@ export class SkyMapComponent implements AfterViewInit, OnChanges {
       width,
       height,
       projection: 'airy',
+      transform: 'equatorial',
+      follow: 'zenith',
       datapath: 'https://ofrohn.github.io/data/',
       stars: {
         show: true,
@@ -88,7 +94,10 @@ export class SkyMapComponent implements AfterViewInit, OnChanges {
         gal: false
       },
       horizon: {
-        show: false
+        show: true
+      },
+      daylight: {
+        show: true
       }
     };
 
@@ -102,11 +111,18 @@ export class SkyMapComponent implements AfterViewInit, OnChanges {
   private updateView(): void {
     const location = [this.lat, this.lon];
     const date = this.date ?? new Date();
-    const highlight = this.highlight?.trim().toLowerCase();
 
     const celestial = (window as any).Celestial;
     if (!celestial) return;
-    celestial.skyview({ location, date });
+
+    const hasTargetCenter = this.targetRa !== null && this.targetDec !== null;
+    const skyViewConfig: any = { location, date };
+    if (hasTargetCenter) {
+      skyViewConfig.center = [this.targetRa, this.targetDec, 0];
+      skyViewConfig.transform = 'equatorial';
+    }
+
+    celestial.skyview(skyViewConfig);
     celestial.redraw();
     this.fitCanvasToHost();
   }

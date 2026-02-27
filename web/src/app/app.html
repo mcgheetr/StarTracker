@@ -12,7 +12,9 @@
       <div class="grid">
         <label class="field">
           <span>Target</span>
-          <input type="text" name="target" [(ngModel)]="target" (input)="onTargetInput($event)" placeholder="Polaris" required>
+          <select name="target" [(ngModel)]="target" required>
+            <option *ngFor="let option of suggestedTargets" [ngValue]="option">{{ option }}</option>
+          </select>
         </label>
 
         <label class="field">
@@ -62,6 +64,7 @@
       <span class="timestamp">UTC: {{ result.at }}</span>
     </div>
     <p class="guidance">{{ result.guidance }}</p>
+    <p class="canonical" *ngIf="canonicalizedTargetHint">{{ canonicalizedTargetHint }}</p>
 
     <div class="metrics">
       <div>
@@ -92,8 +95,9 @@
     <div class="sky-header">
       <div>
         <h2>Sky Map</h2>
-    <p class="lede">Projected view of Ursa Major and Ursa Minor for your location and time.</p>
+        <p class="lede">Observer sky map centered for your selected target, location, and time.</p>
       </div>
+      <span class="status-pill" [class.visible]="isTargetVisible" [class.hidden]="isTargetVisible === false">{{ visibilityLabel }}</span>
     </div>
 
     <div class="sky-canvas">
@@ -101,7 +105,11 @@
         [lat]="latNumber"
         [lon]="lonNumber"
         [date]="skyDate"
-        [highlight]="result?.target ?? target">
+        [highlight]="result?.target ?? target"
+        [targetRa]="result?.rightAscensionDegrees ?? null"
+        [targetDec]="result?.declinationDegrees ?? null"
+        [targetAz]="result?.azimuthDegrees ?? null"
+        [targetAlt]="result?.altitudeDegrees ?? null">
       </app-sky-map>
     </div>
     <p class="hint">Tip: Enter your lat/lon to center the map on your view.</p>

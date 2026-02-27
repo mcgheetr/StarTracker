@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
-import { JsonPipe, NgIf } from '@angular/common';
+import { JsonPipe, NgFor, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { finalize } from 'rxjs';
@@ -7,7 +7,7 @@ import { SkyMapComponent } from './sky/sky-map.component';
 
 @Component({
   selector: 'app-root',
-  imports: [FormsModule, JsonPipe, NgIf, SkyMapComponent],
+  imports: [FormsModule, JsonPipe, NgFor, NgIf, SkyMapComponent],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
@@ -17,6 +17,18 @@ export class App implements AfterViewInit {
   constructor(private readonly http: HttpClient) {}
 
   title = 'StarTracker';
+  readonly suggestedTargets = [
+    'Polaris',
+    'Sirius',
+    'Canopus',
+    'Rigil Kentaurus',
+    'Arcturus',
+    'Vega',
+    'Rigel',
+    'Betelgeuse',
+    'Procyon',
+    'Altair'
+  ];
   target = 'Polaris';
   lat = '';
   lon = '';
@@ -160,6 +172,24 @@ export class App implements AfterViewInit {
     const configured = (globalThis as { __STARTRACKER_CONFIG__?: { apiBaseUrl?: string } })
       .__STARTRACKER_CONFIG__?.apiBaseUrl;
     return configured && configured.trim() ? configured.trim() : '/api';
+  }
+
+  get canonicalizedTargetHint(): string | null {
+    if (!this.result) return null;
+    const requested = this.target.trim().toLowerCase();
+    const canonical = this.result.target.trim().toLowerCase();
+    if (!requested || requested === canonical) return null;
+    return `Showing canonical target: ${this.result.target}`;
+  }
+
+  get isTargetVisible(): boolean | null {
+    if (!this.result) return null;
+    return this.result.altitudeDegrees >= 0;
+  }
+
+  get visibilityLabel(): string {
+    if (this.isTargetVisible === null) return 'No target located yet';
+    return this.isTargetVisible ? 'Visible above horizon' : 'Below horizon at selected time';
   }
 
 }
